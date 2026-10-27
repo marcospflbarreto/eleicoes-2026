@@ -28,3 +28,5 @@ build-backend = "hatchling.build"
 [project.scripts]
 baixar = "eleicoes_2026.download:main"
 processar = "eleicoes_2026.process:main"
+perfil = "eleicoes_2026.perfil:main"
+coletar-legislativo = "eleicoes_2026.legislativo:main"

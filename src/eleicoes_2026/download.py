@@ -1,4 +1,4 @@
-"""Baixa os Boletins de Urna (BU) da eleição presidencial de 2026 do portal de dados abertos do TSE.
+"""Baixa os Boletins de Urna (BU) da eleição presidencial de 2026 (ou de outro ano, via ELEICOES_ANO) do portal de dados abertos do TSE.
 
 Os arquivos são descobertos pela API CKAN do portal (dadosabertos.tse.jus.br), então o
 script funciona mesmo quando o TSE republica arquivos com novo carimbo de data/hora: para
@@ -9,6 +9,7 @@ Uso:
     uv run baixar                     # 1º e 2º turnos, todas as UFs
     uv run baixar --turno 2 --uf SP RJ
     uv run baixar --listar            # só mostra o que está disponível
+    ELEICOES_ANO=2022 uv run baixar   # eleição de 2022, gravada em data/2022
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from pathlib import Path
 import requests
 from tqdm import tqdm
 
-from .config import CKAN, CKAN_QUERY_BU, RAW, UFS
+from .config import ANO, CKAN, CKAN_QUERY_BU, RAW, UFS
 
 # ex.: .../buweb/bweb_1t_AC_051020261403.zip
 RE_BWEB = re.compile(r"/bweb_(?P<turno>[12])t_(?P<uf>[A-Z]{2})_(?P<ts>\d{12})\.zip$")
@@ -55,7 +56,7 @@ def listar_recursos() -> dict[tuple[int, str], Recurso]:
     r.raise_for_status()
     melhores: dict[tuple[int, str], Recurso] = {}
     for pkg in r.json()["result"]["results"]:
-        if "2026" not in pkg["name"]:
+        if pkg["name"] != f"resultados-{ANO}-boletim-de-urna":
             continue
         for res in pkg["resources"]:
             m = RE_BWEB.search(res["url"])

@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from .config import PROCESSED
+from .config import PROCESSED, pasta_processada
 
 CHAVE_SECAO = ["uf", "cd_municipio", "nr_zona", "nr_secao"]
 CHAVE_LOCAL = ["uf", "cd_municipio", "nr_zona", "nr_local_votacao"]
@@ -28,9 +28,12 @@ HORA_ABERTURA_BSB = 8
 # --------------------------------------------------------------------------- carga
 
 
-def carregar_secoes(turno: int) -> pd.DataFrame | None:
-    """Lê a tabela de seções de um turno; devolve None se o turno ainda não foi processado."""
-    path = PROCESSED / f"secoes_{turno}t.parquet"
+def carregar_secoes(turno: int, ano: int | None = None) -> pd.DataFrame | None:
+    """Lê a tabela de seções de um turno; devolve None se o turno ainda não foi processado.
+
+    `ano` lê outra eleição já baixada (ex.: 2022, com `ELEICOES_ANO=2022 uv run baixar && ... processar`).
+    """
+    path = (PROCESSED if ano is None else pasta_processada(ano)) / f"secoes_{turno}t.parquet"
     if not path.exists():
         return None
     df = pd.read_parquet(path)
@@ -127,6 +130,33 @@ def ultimo_digito(contagens: pd.Series | np.ndarray, minimo: int = 100) -> dict:
     obs = np.bincount((x % 10).astype(int), minlength=10)
     chi2, p = stats.chisquare(obs)
     return {"n": int(obs.sum()), "chi2": float(chi2), "p": float(p), "obs_freq": obs / max(obs.sum(), 1)}
+
+
+def simular_digitos(df: pd.DataFrame, cand: str, n_sim: int = 50, seed: int = 0) -> pd.DataFrame:
+    """Quantas UFs 'reprovariam' no 2BL e no último dígito numa eleição SEM fraude nenhuma?
+
+    Gera votos beta-binomiais seção a seção: proporção do candidato = a do município, com a mesma
+    sobredispersão observada entre seções do município. Não há nenhuma manipulação na simulação, então
+    o número de reprovações simuladas é a régua do que é normal. Retorna uma linha por simulação.
+    """
+    rng = np.random.default_rng(seed)
+    d = df.loc[df["votos_validos"] > 0, ["uf", "cd_municipio", "votos_validos", cand]]
+    g = d.groupby(["uf", "cd_municipio"], observed=True)
+    p = (g[cand].transform("sum") / g["votos_validos"].transform("sum")).clip(1e-4, 1 - 1e-4).to_numpy()
+    n = d["votos_validos"].to_numpy()
+    phi = float(np.mean((d[cand].to_numpy() - n * p) ** 2 / (n * p * (1 - p))))
+    rho = np.clip((phi - 1) / np.maximum(n - 1, 1), 1e-9, 0.99)
+    a, b = p * (1 - rho) / rho, (1 - p) * (1 - rho) / rho
+    ufs = d["uf"].to_numpy()
+    linhas = []
+    for _ in range(n_sim):
+        k = pd.Series(rng.binomial(n, rng.beta(a, b)))
+        pv = [(segundo_digito(k[ufs == uf])["p"], ultimo_digito(k[ufs == uf])["p"]) for uf in np.unique(ufs)]
+        pv = np.array(pv)
+        linhas.append({"reprova_2BL": int((pv[:, 0] < 0.05).sum()), "reprova_ultimo": int((pv[:, 1] < 0.05).sum())})
+    out = pd.DataFrame(linhas)
+    out.attrs["phi"] = phi
+    return out
 
 
 # --------------------------------------------------------------------------- homogeneidade no local
@@ -303,3 +333,47 @@ def efeito_dentro_do_grupo(y: pd.Series, x: pd.Series, grupo: pd.Series, peso: p
     fit = sm.WLS(yd, xd.to_frame("x"), weights=w).fit(cov_type="cluster", cov_kwds={"groups": pd.factorize(grupo)[0]})
     lo, hi = fit.conf_int().loc["x"]
     return {"coef": float(fit.params["x"]), "ic95": (float(lo), float(hi)), "p": float(fit.pvalues["x"])}
+
+
+# --------------------------------------------------------------------------- comparação entre eleições
+
+
+def painel_anomalias(df: pd.DataFrame, cand: str, n_sim: int = 20) -> dict:
+    """Os principais indicadores de anomalia de uma eleição, todos medidos para o mesmo `cand`.
+
+    Serve para comparar eleições: um indicador só é estranho se fugir do que outras eleições mostram.
+    """
+    d = df[df["votos_validos"] > 0]
+    mun = d["uf"].astype(str) + "-" + d["cd_municipio"].astype(str)
+    sh = d[cand] / d["votos_validos"] * 100
+
+    loc = desvio_no_local(df, cand)
+    sim = simular_extremos(loc, 5)
+    ext = loc.tabela[loc.tabela["z"].abs() > 5]
+    ultima = df.groupby(CHAVE_LOCAL, observed=True)["nr_secao"].transform("max") == df["nr_secao"]
+    ext_ultima = ext["sec_id"].isin(df.loc[ultima, "sec_id"])
+
+    reprova = sum(segundo_digito(g[cand])["p"] < 0.05 for _, g in df.groupby("uf", observed=True))
+    sim_dig = simular_digitos(df, cand, n_sim=n_sim)
+
+    alto = ((d["comparecimento_pct"] >= 0.95) & (d["qt_aptos"] >= 50)).astype(int)
+    fe_alto = efeito_dentro_do_grupo(sh, alto, mun, d["votos_validos"])
+    sem_bio = d["qt_biom_sem_hab"] / d["qt_comparecimento"].where(d["qt_comparecimento"] > 0)
+    ok = sem_bio.notna() & (d["votos_validos"] >= 30)
+    fe_bio = efeito_dentro_do_grupo(sh[ok], sem_bio[ok] * 100, mun[ok], d.loc[ok, "votos_validos"])
+
+    return {
+        "seções": len(df),
+        f"% {cand}": d[cand].sum() / d["votos_validos"].sum() * 100,
+        "violações aritméticas": int(checar_consistencia(df)["secoes_violando"].sum()),
+        "seções |z|>5 no local": len(ext),
+        "|z|>5 esperado por acaso": sim["esperado_medio"],
+        f"|z|>5 a favor de {cand}": int((ext["z"] > 0).sum()),
+        f"|z|>5 contra {cand}": int((ext["z"] < 0).sum()),
+        "% dos |z|>5 na última seção do local": ext_ultima.mean() * 100 if len(ext) else np.nan,
+        "% de todas as seções que são a última do local": ultima.mean() * 100,
+        "UFs reprovadas no 2BL (de 28)": int(reprova),
+        "UFs reprovadas no 2BL sem fraude (simulação)": float(sim_dig["reprova_2BL"].mean()),
+        "comparecimento ≥95%: efeito no voto (p.p., dentro do município)": fe_alto["coef"],
+        "+1 p.p. sem biometria: efeito no voto (p.p., dentro do município)": fe_bio["coef"],
+    }

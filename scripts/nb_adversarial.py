@@ -279,6 +279,10 @@ estariam **desequilibradas** para um lado.
 Atenção: assimetria também pode ter causa legítima e sistemática — seções do mesmo prédio nem sempre têm eleitorado
 equivalente (seções criadas para novos eleitores, transferidos, seções com acessibilidade que concentram idosos e pessoas
 com deficiência, presos provisórios). Cada seção listada precisa ser checada contra esse tipo de explicação.
+**Resultado da checagem (notebook 03):** a mesma assimetria aparece em 2022, na mesma direção, e mais da metade das seções
+extremas é a **última seção do local** (a mais nova), que concentra eleitores jovens e transferidos. O perfil do eleitorado
+por seção mostra que cerca de 60% das seções extremas (medidas para Lula) têm mais de 10 p.p. a mais de eleitores de 16–24 anos que o resto do
+prédio (contra 7% das seções em geral).
 """),
 ("code", r"""
 for t in TURNOS:
@@ -294,6 +298,9 @@ for t in TURNOS:
         print(f"   teste de simetria (binomial): p = {binomtest(pos, pos + neg).pvalue:.3g}")
     sinalizar(t, "A10 seção |z|>5 vs próprio local", df["sec_id"].isin(r.tabela.loc[r.tabela["z"].abs() > 5, "sec_id"]))
     ext = r.tabela[r.tabela["z"].abs() > 5].merge(df[["sec_id", "nm_municipio", "qt_aptos", "comparecimento_pct"]], on="sec_id")
+    ultima = df.groupby(A.CHAVE_LOCAL, observed=True)["nr_secao"].transform("max") == df["nr_secao"]
+    print(f"   {ext['sec_id'].isin(df.loc[ultima, 'sec_id']).mean():.0%} das seções |z|>5 são a última seção do local "
+          f"(entre todas as seções: {ultima.mean():.0%})")
     display(ext.groupby("uf", observed=True).size().sort_values(ascending=False).head(10).rename("seções |z|>5").to_frame().T)
     display(ext.sort_values("z")[["sec_id", "nm_municipio", "n_secoes_local", "qt_aptos", "votos_validos", "prop", "prop_esperada", "z"]].head(15))
 """),

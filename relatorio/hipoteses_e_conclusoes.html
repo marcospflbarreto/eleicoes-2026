@@ -1,0 +1,392 @@
+<title>Urnas e Emendas 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna de leitura (~68ch) com fichas de hipótese; cada ficha = pergunta → o que olhamos → gráfico → veredito. */
+:root {
+  --bg: #f7f8f6;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --ink-2: #4a5560;
+  --ink-3: #6f7a84;
+  --rule: #dfe3e2;
+  --track: #eceeed;
+  --accent: #2a78d6;      /* série 1: o dado observado */
+  --accent-2: #eb6834;    /* série 2: a referência (simulação, total) */
+  --muted-bar: #b9c0c4;
+  --ok-bg: #e3f2e6; --ok-fg: #1d5e2c;
+  --warn-bg: #fdf0d6; --warn-fg: #7a4e00;
+  --info-bg: #e6eef9; --info-fg: #1f4f8f;
+  --font-display: "Literata", Georgia, "Times New Roman", serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121618; --surface: #1a1f22; --ink: #eef1f0; --ink-2: #c1c8cc; --ink-3: #98a2a8;
+    --rule: #2c3337; --track: #252b2e; --accent: #3987e5; --accent-2: #d95926; --muted-bar: #56616a;
+    --ok-bg: #1d3524; --ok-fg: #a8dcb4; --warn-bg: #3b2d12; --warn-fg: #f2cf8a; --info-bg: #1c2b40; --info-fg: #a9c7f0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121618; --surface: #1a1f22; --ink: #eef1f0; --ink-2: #c1c8cc; --ink-3: #98a2a8;
+  --rule: #2c3337; --track: #252b2e; --accent: #3987e5; --accent-2: #d95926; --muted-bar: #56616a;
+  --ok-bg: #1d3524; --ok-fg: #a8dcb4; --warn-bg: #3b2d12; --warn-fg: #f2cf8a; --info-bg: #1c2b40; --info-fg: #a9c7f0;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
+.page { max-width: 46rem; margin: 0 auto; padding-block: 2.5rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.7rem); font-weight: 700; }
+h2 { font-size: 1.65rem; font-weight: 700; }
+h3 { font-size: 1.22rem; font-weight: 500; }
+p { margin: 0; }
+.stack { display: flex; flex-direction: column; gap: 1rem; }
+.section { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 3.5rem; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.lede { font-size: 1.12rem; color: var(--ink-2); }
+.small { font-size: .9rem; color: var(--ink-2); }
+strong { font-weight: 700; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* faixa com a margem: o número que qualquer contestação precisa superar */
+.margin-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.margin-strip > div { background: var(--surface); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.margin-strip .big { font-family: var(--font-mono); font-size: 1.45rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.how { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem 1.25rem; }
+.how ol { margin: .5rem 0 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: .35rem; }
+
+/* ficha de hipótese */
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.4rem 1.25rem; display: flex; flex-direction: column; gap: .9rem; min-width: 0; }
+.card header { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: baseline; justify-content: space-between; }
+.tag { font-family: var(--font-mono); font-size: .75rem; color: var(--ink-3); }
+.label { font-weight: 700; font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.verdict { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 700; padding: .2rem .65rem; border-radius: 999px; white-space: nowrap; }
+.verdict::before { font-family: var(--font-mono); }
+.v-ok { background: var(--ok-bg); color: var(--ok-fg); } .v-ok::before { content: "✓"; }
+.v-warn { background: var(--warn-bg); color: var(--warn-fg); } .v-warn::before { content: "?"; }
+.v-info { background: var(--info-bg); color: var(--info-fg); } .v-info::before { content: "→"; }
+.takeaway { border-top: 1px solid var(--rule); padding-top: .8rem; }
+
+/* gráficos de barras em HTML: largura proporcional ao valor */
+.chart { display: flex; flex-direction: column; gap: .75rem; }
+.chart-title { font-weight: 700; font-size: .95rem; }
+.legend { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; font-size: .85rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: .4rem; }
+.sw { width: .8rem; height: .8rem; border-radius: 2px; display: inline-block; }
+.row { display: flex; flex-direction: column; gap: .3rem; }
+.row-label { font-size: .88rem; color: var(--ink-2); }
+.bar-line { display: grid; grid-template-columns: 1fr 4.2rem; align-items: center; gap: .6rem; }
+.track { background: var(--track); border-radius: 0 4px 4px 0; height: 1.05rem; position: relative; }
+.bar { height: 100%; border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar.s1 { background: var(--accent); } .bar.s2 { background: var(--accent-2); } .bar.s0 { background: var(--muted-bar); }
+.val { font-family: var(--font-mono); font-size: .85rem; font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; }
+.bar-line:hover .track { outline: 2px solid var(--rule); outline-offset: 1px; }
+
+.cols { display: flex; align-items: flex-end; gap: .6rem; height: 11rem; padding-top: 1.4rem; border-bottom: 1px solid var(--rule); }
+.col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; position: relative; }
+.col .bar { width: 100%; max-width: 3.4rem; border-radius: 4px 4px 0 0; }
+.col .val { position: absolute; text-align: center; margin-bottom: .25rem; }
+.col-labels { display: flex; gap: .6rem; }
+.col-labels > div { flex: 1; text-align: center; font-size: .82rem; color: var(--ink-2); min-width: 0; }
+
+details.table { font-size: .88rem; }
+details.table summary { cursor: pointer; color: var(--ink-2); }
+details.table summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tbl-wrap { overflow-x: auto; margin-top: .5rem; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--rule); }
+th { font-weight: 700; color: var(--ink-2); }
+
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem 1.5rem; }
+.glossary div { min-width: 0; }
+.glossary dt { font-weight: 700; }
+.glossary dd { margin: .15rem 0 0; color: var(--ink-2); font-size: .95rem; }
+footer { margin-top: 3.5rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+a { color: var(--accent); }
+</style>
+
+<main class="page">
+  <div class="stack">
+    <span class="eyebrow">Eleição 2026 · boletins de urna e emendas parlamentares</span>
+    <h1>O que os dados mostram, em linguagem simples</h1>
+    <p class="lede">Este projeto fez duas investigações com dados públicos. A primeira olhou os boletins de urna do 1º turno
+      de 2026, seção por seção, atrás de sinais de fraude. A segunda cruzou as emendas parlamentares com o resultado dos
+      deputados federais. Aqui estão as hipóteses testadas, o que se encontrou e o que ainda não dá para afirmar.</p>
+  </div>
+
+  <div class="section">
+    <div class="how">
+      <strong>Como ler as fichas</strong>
+      <ol>
+        <li><strong>A hipótese</strong> é a desconfiança, escrita como pergunta.</li>
+        <li><strong>O que olhamos</strong> explica o teste sem fórmulas.</li>
+        <li><strong>O gráfico</strong> mostra o dado. Barras azuis são o observado; laranjas, a régua de comparação.</li>
+        <li><strong>O veredito</strong>:
+          <span class="verdict v-ok">Descartada</span> o dado não sustenta a suspeita;
+          <span class="verdict v-info">Explicada</span> o padrão existe, mas tem causa conhecida;
+          <span class="verdict v-warn">Em aberto</span> falta dado ou o resultado é fraco.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ===================== PARTE 1 ===================== -->
+  <section class="section" aria-labelledby="p1">
+    <div class="stack">
+      <span class="eyebrow">Parte 1</span>
+      <h2 id="p1">As urnas do 1º turno de 2026</h2>
+      <p>O TSE publica um <strong>boletim de urna</strong> (BU) por seção eleitoral: quantos eleitores estavam aptos,
+        quantos votaram e quantos votos cada candidato teve. São quase 500 mil seções. Todos os testes também foram
+        rodados na eleição de 2022, que serve de régua: um padrão só é estranho se fugir do que 2022 já mostrava.</p>
+    </div>
+
+    <div class="margin-strip" role="group" aria-label="Números de referência do 1º turno">
+      <div><span class="small">Diferença entre 1º e 2º colocados</span><span class="big">2.224.965</span><span class="small">votos (Flávio Bolsonaro à frente de Lula)</span></div>
+      <div><span class="small">Seções que teriam de ser anuladas para inverter a ordem</span><span class="big">13.453</span><span class="small">as mais favoráveis ao 1º colocado</span></div>
+      <div><span class="small">Seções sinalizadas por algum teste</span><span class="big">17.268</span><span class="small">no conjunto, pendem para o 2º colocado</span></div>
+    </div>
+    <p class="small">Ou seja: anular todas as seções que algum teste marcou <strong>aumentaria</strong> a vantagem de quem
+      ficou em primeiro, em vez de reduzi-la.</p>
+
+    <article class="card">
+      <header><h3>As contas dos boletins fecham?</h3><span class="verdict v-ok">Descartada</span></header>
+      <p><span class="label">Hipótese</span><br>Algumas urnas registram mais votos do que eleitores, ou somas que não batem.</p>
+      <p><span class="label">O que olhamos</span><br>Em cada BU, se votos de todos os candidatos, brancos e nulos somam o
+        total de comparecimento, e se o comparecimento cabe no número de eleitores aptos.</p>
+      <p class="takeaway"><strong>Nenhuma seção</strong> com conta errada, em 2026 e nos dois turnos de 2022.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>A Lei de Benford acusa fraude?</h3><span class="verdict v-ok">Descartada</span></header>
+      <p><span class="label">Hipótese</span><br>A Lei de Benford diz com que frequência cada algarismo aparece em números
+        "naturais". Se os votos fugirem dela, teriam sido inventados.</p>
+      <p><span class="label">O que olhamos</span><br>O teste do 2º dígito "reprova" 26 das 28 unidades da federação. Para
+        saber se isso significa algo, simulamos no computador uma eleição <strong>sem nenhuma fraude</strong>, com os
+        mesmos tamanhos de seção e a mesma variação de votos, e aplicamos o mesmo teste.</p>
+      <div class="chart" aria-label="UFs reprovadas no teste de Benford, real e simulado">
+        <div class="chart-title">Unidades da federação "reprovadas" no teste (de 28)</div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>eleição real</span><span><i class="sw" style="background:var(--accent-2)"></i>eleição simulada sem fraude (média)</span></div>
+        <div data-bars='{"max":28,"rows":[
+          {"label":"2022, 1º turno","bars":[[26,"s1","26"],[25.85,"s2","25,9"]]},
+          {"label":"2022, 2º turno","bars":[[26,"s1","26"],[26.4,"s2","26,4"]]},
+          {"label":"2026, 1º turno","bars":[[26,"s1","26"],[26.25,"s2","26,3"]]}]}'></div>
+      </div>
+      <p class="takeaway">A eleição simulada, limpa por construção, reprova tantas UFs quanto a real. O teste reage ao tamanho
+        das seções e à forma como os votos se distribuem, não a fraude. Por isso ele não serve para auditar eleições
+        brasileiras. Os dois principais candidatos "reprovam" na mesma proporção.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Seções que votam muito diferente das vizinhas</h3><span class="verdict v-info">Explicada em grande parte</span></header>
+      <p><span class="label">Hipótese</span><br>Seções no mesmo prédio (a mesma escola, por exemplo) recebem eleitores
+        parecidos. Uma seção que vota muito diferente das outras do prédio pode ter sido manipulada.</p>
+      <p><span class="label">O que olhamos</span><br>Comparamos o voto em Lula em cada seção com o das outras seções do
+        mesmo local. Por acaso, esperaríamos cerca de 1 seção extrema no país; encontramos <strong>110</strong>,
+        77 com mais votos em Lula e 33 com menos. Em 2022 foram 156 e 143, com a mesma inclinação.</p>
+      <p>O padrão tem uma marca: as seções extremas são, em geral, a <strong>última seção do prédio</strong>, a mais nova.
+        Quando um local enche, o TSE cria uma seção nova e coloca nela quem acabou de tirar ou transferir o título, um
+        público mais jovem. O cadastro do TSE confirma isso.</p>
+      <div class="chart" aria-label="Fatia das seções comuns e das seções extremas">
+        <div class="chart-title">Quanto cada tipo de seção pesa entre todas e entre as extremas</div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent-2)"></i>entre todas as seções</span><span><i class="sw" style="background:var(--accent)"></i>entre as 110 seções extremas</span></div>
+        <div data-bars='{"max":100,"unit":"%","rows":[
+          {"label":"É a última seção do prédio","bars":[[19,"s2","19%"],[57,"s1","57%"]]},
+          {"label":"Tem 10 pontos ou mais de eleitores de 16 a 24 anos a mais que o resto do prédio","bars":[[7,"s2","7%"],[59,"s1","59%"]]}]}'></div>
+      </div>
+      <p class="takeaway">Seções com eleitorado bem mais jovem que o resto do prédio são 7% do total, mas 59% das extremas.
+        Jovens votam diferente, e isso explica por que essas seções destoam. Sobram 41 seções extremas fora desse grupo,
+        28 com mais e 13 com menos votos em Lula. É um desequilíbrio pequeno, que pode ser acaso. Essas seções são
+        as candidatas a conferência manual (ata da mesa, BU impresso). Mesmo todas somadas, valem cerca de 0,3% da diferença
+        entre os candidatos.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Comparecimento alto demais</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">Hipótese</span><br>Seções onde quase todo mundo votou (95% ou mais) podem ter votos
+        "completados" por alguém.</p>
+      <p><span class="label">O que olhamos</span><br>Há 538 seções assim. Comparando cada uma com as outras seções do mesmo
+        município, Lula tem cerca de 5,6 pontos a mais nelas. Repetimos para 2022: lá a diferença foi de 8,4 e 6,1 pontos.</p>
+      <div class="chart" aria-label="Diferença do voto em Lula nas seções de comparecimento muito alto">
+        <div class="chart-title">Pontos percentuais a mais para Lula nas seções com comparecimento ≥ 95%</div>
+        <div data-bars='{"max":10,"rows":[
+          {"label":"2022, 1º turno","bars":[[8.36,"s0","8,4"]]},
+          {"label":"2022, 2º turno","bars":[[6.12,"s0","6,1"]]},
+          {"label":"2026, 1º turno","bars":[[5.64,"s1","5,6"]]}]}'></div>
+      </div>
+      <p class="takeaway">O padrão já existia em 2022, com a mesma direção, e diminuiu em 2026. Não é algo novo desta eleição.
+        Anulá-las tiraria votos do 2º colocado e não do 1º.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Outras suspeitas comuns</h3><span class="verdict v-ok">Descartadas</span></header>
+      <p><span class="label">Biometria</span><br>Seções com mais gente votando sem a digital não votam diferente das outras
+        do mesmo município (efeito praticamente zero, em 2022 e 2026).</p>
+      <p><span class="label">Horários e urnas</span><br>Nenhuma urna abriu cedo demais, fechou antes das 17h ou emitiu o
+        boletim antes do encerramento. Os poucos casos estranhos (7 urnas carregadas no próprio dia, 2 boletins
+        emitidos mais de 2 horas depois) somam menos de 2 mil votos.</p>
+      <p><span class="label">Modelo da urna</span><br>Urnas mais antigas parecem votar diferente (até 7,8 pontos), mas é
+        porque cada região recebeu um lote. Comparando dentro do mesmo município, a diferença cai para 0,4 ponto.</p>
+    </article>
+
+    <div class="card">
+      <span class="label">Conclusão da parte 1</span>
+      <p>Nenhum teste encontrou algo capaz de mudar o resultado. Os padrões que chamam atenção, como seções que destoam
+        das vizinhas e comparecimento alto, aparecem igualmente em 2022 e têm explicação no perfil do eleitorado. O que
+        sobra é pequeno demais para pesar no resultado e merece apenas conferência manual.</p>
+      <p class="small">O 2º turno ainda não está nesta análise: os boletins são processados assim que o TSE publica todas as UFs.</p>
+    </div>
+  </section>
+
+  <!-- ===================== PARTE 2 ===================== -->
+  <section class="section" aria-labelledby="p2">
+    <div class="stack">
+      <span class="eyebrow">Parte 2</span>
+      <h2 id="p2">Emendas parlamentares e a reeleição dos deputados</h2>
+      <p><strong>Emendas parlamentares</strong> são a parte do Orçamento federal cujo destino os congressistas escolhem,
+        geralmente obras e verbas para prefeituras. Cada deputado tem uma cota igual de <strong>emendas
+        individuais</strong>, que o governo é obrigado a pagar. A análise usa as emendas pagas de 2023 a setembro de
+        2026 e acompanha os 513 deputados eleitos em 2022: 415 tentaram a reeleição em 2026, e 297 (72%) conseguiram.</p>
+    </div>
+
+    <article class="card">
+      <header><h3>Para onde e quando o dinheiro vai</h3><span class="verdict v-info">Retrato</span></header>
+      <p>De R$ 87,6 bilhões em emendas individuais pagas desde 2023, R$ 53 bilhões foram para prefeituras e fundos
+        municipais (a maior parte, saúde). Outros 23% passam pelo Banco do Brasil como intermediário, e o município
+        final não aparece nos dados.</p>
+      <p>O calendário eleitoral pesa. A lei proíbe essas transferências nos três meses antes da eleição, e o dinheiro
+        corre para sair antes disso:</p>
+      <div class="chart" aria-label="Fração do pagamento anual feita de janeiro a junho">
+        <div class="chart-title">Parte do ano paga de janeiro a junho</div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>ano de eleição</span><span><i class="sw" style="background:var(--muted-bar)"></i>ano sem eleição</span></div>
+        <div data-cols='[[73,"s1","73%","2022","eleição geral"],[27,"s0","27%","2023",""],[52,"s1","52%","2024","eleição municipal"],[19,"s0","19%","2025",""],[90,"s1","90%","2026","eleição geral"]]'></div>
+      </div>
+      <p class="small">Em 2026 o pagamento vai só até outubro, o que aumenta um pouco a fatia do 1º semestre.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Quem recebeu mais emendas se reelegeu mais?</h3><span class="verdict v-warn">Sem resposta clara</span></header>
+      <p><span class="label">Hipótese</span><br>Mais dinheiro levado ao eleitor rende mais votos.</p>
+      <p><span class="label">O que olhamos</span><br>Como a cota é igual, quem exerceu o mandato inteiro recebeu quase o mesmo:
+        metade dos deputados ficou entre R$ 88 e 102 milhões. Os valores muito menores são de quem se licenciou para
+        ser ministro ou secretário. Dividimos os candidatos em três grupos iguais pelo valor pago:</p>
+      <div class="chart" aria-label="Taxa de reeleição por valor de emendas pagas">
+        <div class="chart-title">Taxa de reeleição, por valor de emendas pagas</div>
+        <div data-bars='{"max":100,"rows":[
+          {"label":"Terço que recebeu menos (mediana R$ 82 mi)","bars":[[68,"s1","68%"]]},
+          {"label":"Terço do meio (R$ 95 mi)","bars":[[69,"s1","69%"]]},
+          {"label":"Terço que recebeu mais (R$ 104 mi)","bars":[[78,"s1","78%"]]}]}'></div>
+      </div>
+      <p class="takeaway">Os que receberam mais se reelegeram um pouco mais, mas a diferença é pequena e pode ser acaso:
+        a chance de um resultado assim surgir sem relação real é de cerca de 10%. Com tão pouca variação no valor, os
+        dados não conseguem responder.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Concentrar emendas na própria base dá mais votos?</h3><span class="verdict v-info">Sim, como associação</span></header>
+      <p><span class="label">Hipótese</span><br>Mandar o dinheiro para os municípios que o elegeram fideliza o eleitor.</p>
+      <p><span class="label">O que olhamos</span><br>Chamamos de <strong>base eleitoral</strong> os municípios que,
+        somados, deram metade dos votos do deputado em 2022. Medimos que fração das emendas foi para lá e comparamos
+        com o resultado em 2026.</p>
+      <div class="chart" aria-label="Reeleição e variação de votos por concentração na base">
+        <div class="chart-title">Por concentração das emendas na base eleitoral</div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>taxa de reeleição</span></div>
+        <div data-bars='{"max":100,"rows":[
+          {"label":"Pouca (cerca de 18% na base) · votos caíram 8% em relação a 2022","bars":[[62,"s1","62%"]]},
+          {"label":"Média (32%) · votos subiram 2%","bars":[[74,"s1","74%"]]},
+          {"label":"Muita (50%) · votos subiram 5%","bars":[[80,"s1","80%"]]}]}'></div>
+      </div>
+      <p class="takeaway">Quem concentrou mais na base ganhou mais votos de 2022 para 2026. A relação continua ao comparar
+        apenas deputados do mesmo partido e do mesmo estado, e a chance de ser acaso é menor que 3%. Isso não prova que as
+        emendas <em>causaram</em> os votos. Deputados com uma base fiel podem tanto mandar mais dinheiro para ela quanto
+        crescer por outros motivos. Também faltam os gastos de campanha de 2026, ainda não publicados.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Alinhamento com o governo ajuda?</h3><span class="verdict v-info">Efeito do partido</span></header>
+      <p><span class="label">Hipótese</span><br>Deputados que votam com o governo conseguem mais emendas e se reelegem mais.</p>
+      <p><span class="label">O que olhamos</span><br>Contamos, nas votações da Câmara de 2023 a 2026, quantas vezes cada
+        deputado votou como o governo orientou. Esse alinhamento não muda o valor pago, que é fixo por lei. Na reeleição:</p>
+      <div class="chart" aria-label="Taxa de reeleição por alinhamento com o governo">
+        <div class="chart-title">Taxa de reeleição, pela fração de votos com o governo</div>
+        <div data-bars='{"max":100,"rows":[
+          {"label":"Até 40% (oposição, quase toda do PL) · 77 deputados","bars":[[86,"s1","86%"]]},
+          {"label":"40 a 60% · 30 deputados","bars":[[67,"s1","67%"]]},
+          {"label":"60 a 80% (centro) · 80 deputados","bars":[[57.5,"s1","58%"]]},
+          {"label":"80 a 90% · 130 deputados","bars":[[73,"s1","73%"]]},
+          {"label":"Acima de 90% (base do governo) · 98 deputados","bars":[[71,"s1","71%"]]}]}'></div>
+      </div>
+      <p class="takeaway">A oposição se reelegeu mais. Ao comparar apenas deputados do mesmo partido, a diferença na
+        reeleição desaparece: é o desempenho do partido em 2026, não o alinhamento nem as emendas.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>"Emenda Pix" e pagar perto da eleição</h3><span class="verdict v-ok">Sem relação</span></header>
+      <p>A <strong>transferência especial</strong>, apelidada de "emenda Pix", manda o dinheiro direto ao caixa da
+        prefeitura, sem projeto definido. Deputados que usaram mais esse tipo, ou que tiveram mais emendas pagas em
+        2026, não se reelegeram mais nem cresceram mais em votos. Como quase todos pagam antes de julho do ano eleitoral,
+        há pouca diferença entre eles para medir.</p>
+    </article>
+
+    <div class="card">
+      <span class="label">Conclusão da parte 2</span>
+      <p>O <strong>quanto</strong> cada deputado destina é quase igual por lei e não explica quem se reelegeu. O que se
+        associa a mais votos é o <strong>onde</strong>: concentrar as emendas na própria base. O próximo passo é olhar
+        município por município, comparando o mesmo deputado em lugares que receberam mais e menos dinheiro. Essa
+        comparação isola melhor o efeito das emendas.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="gl">
+    <h2 id="gl">Pequeno glossário</h2>
+    <dl class="glossary">
+      <div><dt>Seção eleitoral</dt><dd>Uma urna e seus eleitores. Um local de votação (uma escola) tem várias.</dd></div>
+      <div><dt>Boletim de urna (BU)</dt><dd>O resultado impresso e publicado de cada urna ao fim da votação.</dd></div>
+      <div><dt>"Pode ser acaso"</dt><dd>Quando a chance de o padrão surgir sem causa real passa de 5%, não o tratamos como achado.</dd></div>
+      <div><dt>Comparar dentro do município</dt><dd>Comparar cada seção só com vizinhas, para que diferenças entre regiões não se passem por anomalia.</dd></div>
+      <div><dt>Associação</dt><dd>Duas coisas andam juntas. Não quer dizer que uma cause a outra.</dd></div>
+      <div><dt>Base eleitoral</dt><dd>Os municípios que, somados, deram metade dos votos do deputado em 2022.</dd></div>
+    </dl>
+  </section>
+
+  <footer class="small">
+    Fontes: boletins de urna e candidaturas do TSE (2022 e 2026), Portal da Transparência (emendas, 2023 a out/2026),
+    dados abertos da Câmara dos Deputados. Código e notebooks: <a href="https://github.com/marcospflbarreto/eleicoes-2026">github.com/marcospflbarreto/eleicoes-2026</a>.
+  </footer>
+</main>
+
+<script>
+// Barras horizontais: data-bars='{"max":N,"rows":[{"label":..., "bars":[[valor, classe, rótulo], ...]}]}'
+document.querySelectorAll("[data-bars]").forEach(function (el) {
+  var spec = JSON.parse(el.getAttribute("data-bars"));
+  var html = "";
+  spec.rows.forEach(function (r) {
+    html += '<div class="row"><div class="row-label">' + r.label + "</div>";
+    r.bars.forEach(function (b) {
+      var w = Math.max(0, Math.min(100, (b[0] / spec.max) * 100));
+      html += '<div class="bar-line" title="' + r.label + ": " + b[2] + '"><div class="track"><div class="bar ' + b[1] +
+        '" style="width:' + w + '%"></div></div><span class="val">' + b[2] + "</span></div>";
+    });
+    html += "</div>";
+  });
+  el.className = "chart";
+  el.innerHTML = html;
+});
+// Colunas: data-cols='[[valor (0–100), classe, rótulo, categoria, nota], ...]'
+document.querySelectorAll("[data-cols]").forEach(function (el) {
+  var cols = JSON.parse(el.getAttribute("data-cols"));
+  var top = '<div class="cols">', bottom = '<div class="col-labels">';
+  cols.forEach(function (c) {
+    top += '<div class="col" title="' + c[3] + ": " + c[2] + '"><span class="val" style="bottom:' + c[0] + '%">' + c[2] +
+      '</span><div class="bar ' + c[1] + '" style="height:' + c[0] + '%"></div></div>';
+    bottom += "<div><strong>" + c[3] + "</strong>" + (c[4] ? "<br>" + c[4] : "") + "</div>";
+  });
+  el.innerHTML = top + "</div>" + bottom + "</div>";
+});
+</script>

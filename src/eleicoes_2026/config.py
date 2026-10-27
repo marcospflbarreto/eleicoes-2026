@@ -4,7 +4,16 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA = Path(os.environ.get("ELEICOES_DADOS", ROOT / "data"))  # sobrescrevível p/ testes
+# Ano da eleição. 2026 é o padrão; outro ano (ex.: ELEICOES_ANO=2022) serve de referência e fica em data/<ano>.
+ANO = int(os.environ.get("ELEICOES_ANO", "2026"))
+DATA = Path(os.environ.get("ELEICOES_DADOS", ROOT / "data" if ANO == 2026 else ROOT / "data" / str(ANO)))  # sobrescrevível p/ testes
+
+
+def pasta_processada(ano: int) -> Path:
+    """data/processed de outra eleição (ex.: 2022, usada como referência)."""
+    return DATA / "processed" if ano == ANO else ROOT / "data" / ("" if ano == 2026 else str(ano)) / "processed"
+
+
 RAW = DATA / "raw"  # zips originais do TSE (dados não confiáveis: nunca executar nada daqui)
 INTERIM = DATA / "interim"  # parquet por UF, apenas cargo Presidente
 PROCESSED = DATA / "processed"  # tabelas finais usadas pelos notebooks
@@ -12,7 +21,7 @@ FIGURES = ROOT / "reports" / "figures"
 
 CKAN = "https://dadosabertos.tse.jus.br/api/3/action"
 # Pacote(s) do portal de dados abertos com os Boletins de Urna (BU) em CSV.
-CKAN_QUERY_BU = "boletim de urna 2026"
+CKAN_QUERY_BU = f"boletim de urna {ANO}"
 
 UFS = [
     "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA",

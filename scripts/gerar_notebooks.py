@@ -15,6 +15,8 @@ from nbclient import NotebookClient
 AQUI = Path(__file__).resolve().parent
 sys.path.insert(0, str(AQUI))
 import nb_adversarial  # noqa: E402
+import nb_comparacao  # noqa: E402
+import nb_emendas  # noqa: E402
 import nb_neutro  # noqa: E402
 
 NOTEBOOKS = AQUI.parent / "notebooks"
@@ -33,10 +35,10 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--executar", action="store_true")
     p.add_argument("--timeout", type=int, default=1800)
-    p.add_argument("--so", choices=["neutro", "adversarial"], help="gera apenas um dos notebooks")
+    p.add_argument("--so", choices=["neutro", "adversarial", "comparacao", "emendas"], help="gera apenas um dos notebooks")
     a = p.parse_args()
     NOTEBOOKS.mkdir(exist_ok=True)
-    for mod in (nb_neutro, nb_adversarial):
+    for mod in (nb_neutro, nb_adversarial, nb_comparacao, nb_emendas):
         if a.so and a.so not in mod.__name__:
             continue
         nb = montar(mod)

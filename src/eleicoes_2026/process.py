@@ -26,6 +26,8 @@ from .config import CD_CARGO_PRESIDENTE, INTERIM, PROCESSED, RAW, REGIAO
 
 CHAVE = ["turno", "uf", "cd_municipio", "nr_zona", "nr_secao"]
 
+# Os TRY_CAST levam nullif para que o DuckDB 2.0 não os empurre para dentro do leitor de CSV, onde virariam CAST
+# estrito e falhariam em valores como "#NULO".
 SELECT_BU = f"""
 SELECT
     NR_TURNO::INT                                  AS turno,
@@ -34,34 +36,39 @@ SELECT
     NM_MUNICIPIO                                   AS nm_municipio,
     NR_ZONA::INT                                   AS nr_zona,
     NR_SECAO::INT                                  AS nr_secao,
-    TRY_CAST(NR_LOCAL_VOTACAO AS INT)              AS nr_local_votacao,
-    TRY_CAST(QT_APTOS AS INT)                      AS qt_aptos,
-    TRY_CAST(QT_COMPARECIMENTO AS INT)             AS qt_comparecimento,
-    TRY_CAST(QT_ABSTENCOES AS INT)                 AS qt_abstencoes,
-    TRY_CAST(CD_TIPO_URNA AS INT)                  AS cd_tipo_urna,
+    TRY_CAST(nullif(NR_LOCAL_VOTACAO, '') AS INT)              AS nr_local_votacao,
+    TRY_CAST(nullif(QT_APTOS, '') AS INT)                      AS qt_aptos,
+    TRY_CAST(nullif(QT_COMPARECIMENTO, '') AS INT)             AS qt_comparecimento,
+    TRY_CAST(nullif(QT_ABSTENCOES, '') AS INT)                 AS qt_abstencoes,
+    TRY_CAST(nullif(CD_TIPO_URNA, '') AS INT)                  AS cd_tipo_urna,
     DS_TIPO_URNA                                   AS ds_tipo_urna,
-    TRY_CAST(CD_TIPO_VOTAVEL AS INT)               AS cd_tipo_votavel,
+    TRY_CAST(nullif(CD_TIPO_VOTAVEL, '') AS INT)               AS cd_tipo_votavel,
     DS_TIPO_VOTAVEL                                AS ds_tipo_votavel,
-    TRY_CAST(NR_VOTAVEL AS INT)                    AS nr_votavel,
+    TRY_CAST(nullif(NR_VOTAVEL, '') AS INT)                    AS nr_votavel,
     NM_VOTAVEL                                     AS nm_votavel,
     SG_PARTIDO                                     AS sg_partido,
-    TRY_CAST(QT_VOTOS AS INT)                      AS qt_votos,
+    TRY_CAST(nullif(QT_VOTOS, '') AS INT)                      AS qt_votos,
     NULLIF(NR_URNA_EFETIVADA, '#NULO#')            AS nr_urna_efetivada,
     NULLIF(CD_CARGA_1_URNA_EFETIVADA, '#NULO#')    AS cd_carga_1,
     NULLIF(CD_CARGA_2_URNA_EFETIVADA, '#NULO#')    AS cd_carga_2,
     NULLIF(CD_FLASHCARD_URNA_EFETIVADA, '#NULO#')  AS cd_flashcard,
-    TRY_CAST(DT_CARGA_URNA_EFETIVADA AS TIMESTAMP) AS dt_carga_urna,
+    TRY_CAST(nullif(DT_CARGA_URNA_EFETIVADA, '') AS TIMESTAMP) AS dt_carga_urna,
     NULLIF(DS_SECOES_AGREGADAS, '#NULO#')          AS ds_secoes_agregadas,
-    TRY_CAST(DT_ABERTURA AS TIMESTAMP)             AS dt_abertura,
-    TRY_CAST(DT_ENCERRAMENTO AS TIMESTAMP)         AS dt_encerramento,
-    TRY_CAST(DT_EMISSAO_BU AS TIMESTAMP)           AS dt_emissao_bu,
-    TRY_CAST(DT_BU_RECEBIDO AS TIMESTAMP)          AS dt_bu_recebido,
-    TRY_CAST(QT_ELEI_BIOM_SEM_HABILITACAO AS INT)  AS qt_biom_sem_hab,
-    TRY_CAST(NR_JUNTA_APURADORA AS INT)            AS nr_junta,
-    TRY_CAST(NR_TURMA_APURADORA AS INT)            AS nr_turma
-FROM read_csv(?, delim=';', quote='"', encoding='latin-1', header=true, all_varchar=true)
+    TRY_CAST(nullif(DT_ABERTURA, '') AS TIMESTAMP)             AS dt_abertura,
+    TRY_CAST(nullif(DT_ENCERRAMENTO, '') AS TIMESTAMP)         AS dt_encerramento,
+    TRY_CAST(nullif(DT_EMISSAO_BU, '') AS TIMESTAMP)           AS dt_emissao_bu,
+    TRY_CAST(nullif(DT_BU_RECEBIDO, '') AS TIMESTAMP)          AS dt_bu_recebido,
+    TRY_CAST(nullif(QT_ELEI_BIOM_SEM_HABILITACAO, '') AS INT)  AS qt_biom_sem_hab,
+    TRY_CAST(nullif(NR_JUNTA_APURADORA, '') AS INT)            AS nr_junta,
+    TRY_CAST(nullif(NR_TURMA_APURADORA, '') AS INT)            AS nr_turma
+FROM ({{fonte}})
 WHERE CD_CARGO_PERGUNTA = '{CD_CARGO_PRESIDENTE}'
 """
+
+CSV = "read_csv(?, delim=';', quote='\"', encoding='latin-1', header=true, all_varchar=true)"
+
+# Colunas que mudaram de nome entre eleições (nome antigo -> nome atual).
+NOMES_ANTIGOS = {"DS_AGREGADAS": "DS_SECOES_AGREGADAS", "QT_ELEITORES_BIOMETRIA_NH": "QT_ELEI_BIOM_SEM_HABILITACAO"}
 
 ATRIBUTOS_SECAO = [
     "nm_municipio", "nr_local_votacao", "qt_aptos", "qt_comparecimento", "qt_abstencoes",
@@ -81,7 +88,10 @@ def zip_para_parquet(zip_path: Path, saida: Path) -> None:
         with z.open(csvs[0]) as src, csv.open("wb") as dst:
             shutil.copyfileobj(src, dst, 1 << 22)
         con = duckdb.connect()
-        rel = con.sql(SELECT_BU, params=[str(csv)])
+        colunas = {c for c, *_ in con.sql(f"DESCRIBE SELECT * FROM {CSV}", params=[str(csv)]).fetchall()}
+        renomear = [f"{a} AS {n}" for a, n in NOMES_ANTIGOS.items() if a in colunas]
+        fonte = f"SELECT * RENAME ({', '.join(renomear)}) FROM {CSV}" if renomear else f"SELECT * FROM {CSV}"
+        rel = con.sql(SELECT_BU.replace("{fonte}", fonte), params=[str(csv)])
         saida.parent.mkdir(parents=True, exist_ok=True)
         rel.write_parquet(str(saida), compression="zstd")
         con.close()
