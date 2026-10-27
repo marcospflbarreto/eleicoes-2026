@@ -276,6 +276,24 @@ ax.set_xlabel("fração das emendas (com município identificado) paga na base e
 ax.set_ylabel("log(votos 2026 / votos 2022)"); ax.set_title("Concentrar emendas na base e variação de votos")
 plt.show()
 """),
+("code", r"""
+t = taxa_por_faixa("pct_na_base", ("pouca", "média", "muita"))
+fig, axs = plt.subplots(1, 2, figsize=(12, 4.5))
+rot = [f"{f}\n({v:.0%} na base)" for f, v in zip(t.index, t["valor_mediano"])]
+axs[0].bar(rot, t["taxa_reeleicao"] * 100, color="C0", width=.6)
+axs[0].set_ylim(0, 100); axs[0].set_ylabel("% reeleitos"); axs[0].set_title("Taxa de reeleição")
+crescimento = (np.exp(t["crescimento_mediano_votos"]) - 1) * 100
+axs[1].bar(rot, crescimento, color=np.where(crescimento >= 0, "C0", "C1"), width=.6)
+axs[1].axhline(0, color="k", lw=.8); axs[1].set_ylabel("% de votos, 2026 vs. 2022 (mediana)")
+axs[1].margins(y=.2)  # espaço para os rótulos acima e abaixo das barras
+axs[1].set_title("Variação dos votos")
+for ax, vals, fmt in ((axs[0], t["taxa_reeleicao"] * 100, "{:.0f}%"), (axs[1], crescimento, "{:+.0f}%")):
+    for x, v in enumerate(vals):
+        ax.annotate(fmt.format(v), (x, v), ha="center", va="bottom" if v >= 0 else "top", xytext=(0, 3 if v >= 0 else -3),
+                    textcoords="offset points", weight="bold")
+fig.suptitle("Deputados por concentração das emendas na base eleitoral (terços)", weight="bold")
+plt.tight_layout(); plt.show()
+"""),
 ("md", r"""
 **Leitura.**
 - **Valor pago:** a associação com reeleição é pequena e não significativa a 5%. Era o esperado: com cota igual, quase não
