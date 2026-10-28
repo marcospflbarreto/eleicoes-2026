@@ -16,30 +16,37 @@ converte para Parquet e gera notebooks com gráficos e testes de anomalia:
 testadas e o que cada uma concluiu (fonte em [`docs/index.html`](docs/index.html)). Os números são mostrados com o
 teste que os põe em contexto; anomalia estatística indica onde olhar, não prova irregularidade. Alguns resultados:
 
-**Nenhum boletim de urna com conta errada.** Em 2026 e nos dois turnos de 2022, todas as seções têm votos somando o
-comparecimento, e o comparecimento cabe no número de eleitores aptos. Para inverter a ordem do 1º turno de 2026 seria
-preciso anular 13.453 seções. Somadas, as seções que algum teste marcou pendem para o 2º colocado: anulá-las aumentaria a
-vantagem de quem ficou em primeiro.
+**Nenhum boletim de urna com conta errada.** Nos dois turnos de 2026 e nos dois de 2022, todas as seções têm votos
+somando o comparecimento, e o comparecimento cabe no número de eleitores aptos. No 2º turno de 2026, Lula venceu por
+4.430.191 votos (51,8% dos válidos); para inverter o resultado seria preciso anular 23.770 seções. No 1º turno, Flávio
+Bolsonaro ficou 2.224.965 votos à frente, e seriam 13.453 seções.
+
+**As seções que os testes marcam pendem para Lula nos dois turnos, por um motivo só.** No 1º turno, anular todas as
+seções marcadas por algum teste aumentaria a vantagem de quem ficou em primeiro. No 2º, elas dão a Lula, o vencedor, um
+saldo de 997 mil votos (22,5% da diferença). Quase tudo vem das 16.142 seções agregadas, que recebem os eleitores de
+outra seção pequena: são as mesmas nos dois turnos e votam mais em Lula nos dois. Sem elas, o que sobra vale 3,8% da
+diferença. As 446 seções que o modelo entre turnos aponta como "fora da previsão" votaram quase igual nos dois turnos
+(90% mudaram menos de 5 pontos): quem erra é o modelo, que se apoia na média do município.
 
 **O teste de Benford "reprova" até uma eleição sem fraude.** O 2º dígito dos votos foge da Lei de Benford em 26 das 28
-UFs. Mas uma eleição simulada, limpa por construção e com os mesmos tamanhos de seção, reprova o mesmo número. O teste
+UFs no 1º turno de 2026 e em 25 no 2º. Mas uma eleição simulada, limpa por construção e com os mesmos tamanhos de seção, reprova o mesmo número. O teste
 mede a forma da distribuição dos votos, não fraude.
 
-![Gráfico de pontos: em 2022 (1º e 2º turnos) e em 2026, a eleição real reprova o teste de Benford em 26 das 28 UFs, e as eleições simuladas sem fraude reprovam entre 25 e 28, o mesmo patamar](docs/img/benford_simulacao.png)
+![Gráfico de pontos: nos dois turnos de 2022 e de 2026, a eleição real reprova o teste de Benford em 25 ou 26 das 28 UFs, e as eleições simuladas sem fraude reprovam entre 25 e 28, o mesmo patamar](docs/img/benford_simulacao.png)
 
 **O modelo da urna não muda o voto.** As urnas de 2026 são de quatro modelos, de 2013 a 2022. Na média nacional, o voto
 no 1º colocado varia 2,3 pontos entre modelos. Comparando só urnas do mesmo prédio, a diferença cai para 0,15 ponto: ela
-vem de onde cada modelo foi instalado, não do modelo.
+vem de onde cada modelo foi instalado, não do modelo. No 2º turno, 2,4 e 0,17 pontos.
 
 ![Barras por modelo de urna no 1º turno de 2026: no Brasil todo, a urna UE2013 tem 2 pontos a menos de voto em Flávio Bolsonaro que a média; comparada com urnas do mesmo município ou do mesmo local de votação, a diferença é de décimos de ponto, e os outros modelos ficam perto de zero nas três comparações](docs/img/modelo_urna.png)
 
-**As seções que destoam do próprio prédio são as mais novas, com eleitorado mais jovem.** Há cerca de 110 seções que
-votam muito diferente das outras do mesmo local, contra ~1 esperada por acaso. O padrão é igual ao de 2022. 57% delas são
+**As seções que destoam do próprio prédio são as mais novas, com eleitorado mais jovem.** Em cada turno de 2026 há 110
+seções que votam muito diferente das outras do mesmo local, contra ~1 esperada por acaso. O padrão é igual ao de 2022. 57% delas são
 a última seção do prédio, que é só 19% de todas as seções. É nessa seção nova que o TSE coloca quem acabou de tirar ou
 transferir o título. Seções com 10 pontos ou mais de eleitores de 16 a 24 anos a mais que o resto do prédio são 7% do
 total, mas 59% das extremas.
 
-![Barras horizontais: em 2022 e 2026, a última seção de cada prédio tem mais seções extremas que todas as outras seções juntas; em 2022 elas pendem fortemente para Lula, em 2026 para os dois lados](docs/img/secoes_extremas.png)
+![Barras horizontais: nos dois turnos de 2022 e de 2026, a última seção de cada prédio, que é uma em cada cinco, tem mais seções extremas que todas as outras seções juntas; em 2022 elas pendem fortemente para Lula, em 2026 menos](docs/img/secoes_extremas.png)
 
 ![Dispersão: a nuvem de seções normais fica em torno de zero; as seções extremas, em vermelho, aparecem acima e abaixo e se espalham para a direita, onde a seção tem muito mais eleitores de 16 a 24 anos que o resto do prédio](docs/img/secoes_jovens.png)
 
@@ -81,14 +88,16 @@ uv run jupyter lab                # para explorar interativamente
 
 Outras opções: `uv run baixar --listar` mostra o que já foi publicado; `--turno 2`, `--uf SP RJ`.
 
-**2º turno:** o TSE publica o CSV do BU cerca de 1 dia depois de cada turno (o do 1º turno saiu em 05/10). Quando
-`uv run baixar --listar` mostrar o 2º turno, rode:
+**2º turno:** o TSE publica o CSV do BU cerca de 1 dia depois de cada turno (o do 1º turno saiu em 05/10, o do 2º em
+26/10). `scripts/atualizar_2t.sh` confere se as 28 UFs estão no portal e, se estiverem, baixa, processa e reexecuta os
+notebooks:
 
 ```bash
 uv run baixar --turno 2 && uv run processar --turno 2 && uv run python scripts/gerar_notebooks.py --executar
 ```
 
 Os notebooks detectam sozinhos se o 2º turno está disponível. As seções que comparam os dois turnos só rodam quando ele está.
+O download lê o pacote do portal direto (`package_show`): o índice de busca do portal demorou dias para mostrar o 2º turno.
 
 ## Emendas parlamentares × deputados federais
 

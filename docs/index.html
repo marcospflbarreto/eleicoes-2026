@@ -118,7 +118,7 @@ a { color: var(--accent); }
   <div class="stack">
     <span class="eyebrow">Eleição 2026 · boletins de urna e emendas parlamentares</span>
     <h1>O que os dados mostram, em linguagem simples</h1>
-    <p class="lede">Este projeto fez duas investigações com dados públicos. A primeira olhou os boletins de urna do 1º turno
+    <p class="lede">Este projeto fez duas investigações com dados públicos. A primeira olhou os boletins de urna dos dois turnos
       de 2026, seção por seção, atrás de sinais de fraude. A segunda cruzou as emendas parlamentares com o resultado dos
       deputados federais. Aqui estão as hipóteses testadas, o que se encontrou e o que ainda não dá para afirmar.</p>
   </div>
@@ -142,33 +142,43 @@ a { color: var(--accent); }
   <section class="section" aria-labelledby="p1">
     <div class="stack">
       <span class="eyebrow">Parte 1</span>
-      <h2 id="p1">As urnas do 1º turno de 2026</h2>
+      <h2 id="p1">As urnas de 2026</h2>
       <p>O TSE publica um <strong>boletim de urna</strong> (BU) por seção eleitoral: quantos eleitores estavam aptos,
-        quantos votaram e quantos votos cada candidato teve. São quase 500 mil seções. Todos os testes também foram
-        rodados na eleição de 2022, que serve de régua: um padrão só é estranho se fugir do que 2022 já mostrava.</p>
+        quantos votaram e quantos votos cada candidato teve. São quase 500 mil seções em cada turno. Todos os testes
+        rodaram nos dois turnos de 2026 e também na eleição de 2022, que serve de régua: um padrão só é estranho se
+        fugir do que 2022 já mostrava.</p>
     </div>
 
+    <span class="label">1º turno, 4 de outubro</span>
     <div class="margin-strip" role="group" aria-label="Números de referência do 1º turno">
       <div><span class="small">Diferença entre 1º e 2º colocados</span><span class="big">2.224.965</span><span class="small">votos (Flávio Bolsonaro à frente de Lula)</span></div>
       <div><span class="small">Seções que teriam de ser anuladas para inverter a ordem</span><span class="big">13.453</span><span class="small">as mais favoráveis ao 1º colocado</span></div>
       <div><span class="small">Seções sinalizadas por algum teste</span><span class="big">17.268</span><span class="small">no conjunto, pendem para o 2º colocado</span></div>
     </div>
-    <p class="small">Ou seja: anular todas as seções que algum teste marcou <strong>aumentaria</strong> a vantagem de quem
-      ficou em primeiro, em vez de reduzi-la.</p>
+    <span class="label">2º turno, 25 de outubro</span>
+    <div class="margin-strip" role="group" aria-label="Números de referência do 2º turno">
+      <div><span class="small">Diferença entre os candidatos</span><span class="big">4.430.191</span><span class="small">votos (Lula, 51,8%, à frente de Flávio Bolsonaro, 48,2%)</span></div>
+      <div><span class="small">Seções que teriam de ser anuladas para inverter o resultado</span><span class="big">23.770</span><span class="small">as mais favoráveis a Lula</span></div>
+      <div><span class="small">Seções sinalizadas por algum teste</span><span class="big">21.983</span><span class="small">no conjunto, pendem para Lula, mas valem 22% da diferença</span></div>
+    </div>
+    <p class="small">No 1º turno, anular todas as seções que algum teste marcou <strong>aumentaria</strong> a vantagem de
+      quem ficou em primeiro. No 2º turno elas pendem para o vencedor, mas mesmo anulando todas ele continuaria à frente,
+      e quase todo esse saldo tem uma explicação simples (ficha "As seções marcadas no 2º turno", mais abaixo).</p>
 
     <article class="card">
       <header><h3>As contas dos boletins fecham?</h3><span class="verdict v-ok">Descartada</span></header>
       <p><span class="label">Hipótese</span><br>Algumas urnas registram mais votos do que eleitores, ou somas que não batem.</p>
       <p><span class="label">O que olhamos</span><br>Em cada BU, se votos de todos os candidatos, brancos e nulos somam o
         total de comparecimento, e se o comparecimento cabe no número de eleitores aptos.</p>
-      <p class="takeaway"><strong>Nenhuma seção</strong> com conta errada, em 2026 e nos dois turnos de 2022.</p>
+      <p class="takeaway"><strong>Nenhuma seção</strong> com conta errada, nos dois turnos de 2026 e nos dois de 2022.</p>
     </article>
 
     <article class="card">
       <header><h3>A Lei de Benford acusa fraude?</h3><span class="verdict v-ok">Descartada</span></header>
       <p><span class="label">Hipótese</span><br>A Lei de Benford diz com que frequência cada algarismo aparece em números
         "naturais". Se os votos fugirem dela, teriam sido inventados.</p>
-      <p><span class="label">O que olhamos</span><br>O teste do 2º dígito "reprova" 26 das 28 unidades da federação. Para
+      <p><span class="label">O que olhamos</span><br>O teste do 2º dígito "reprova" 26 das 28 unidades da federação no
+        1º turno e 25 no 2º. Para
         saber se isso significa algo, simulamos no computador uma eleição <strong>sem nenhuma fraude</strong>, com os
         mesmos tamanhos de seção e a mesma variação de votos, e aplicamos o mesmo teste.</p>
       <div class="chart" aria-label="UFs reprovadas no teste de Benford, real e simulado">
@@ -177,7 +187,8 @@ a { color: var(--accent); }
         <div data-bars='{"max":28,"rows":[
           {"label":"2022, 1º turno","bars":[[26,"s1","26"],[25.85,"s2","25,9"]]},
           {"label":"2022, 2º turno","bars":[[26,"s1","26"],[26.4,"s2","26,4"]]},
-          {"label":"2026, 1º turno","bars":[[26,"s1","26"],[26.25,"s2","26,3"]]}]}'></div>
+          {"label":"2026, 1º turno","bars":[[26,"s1","26"],[26.25,"s2","26,3"]]},
+          {"label":"2026, 2º turno","bars":[[25,"s1","25"],[26.5,"s2","26,5"]]}]}'></div>
       </div>
       <p class="takeaway">A eleição simulada, limpa por construção, reprova tantas UFs quanto a real. O teste reage ao tamanho
         das seções e à forma como os votos se distribuem, não a fraude. Por isso ele não serve para auditar eleições
@@ -189,13 +200,14 @@ a { color: var(--accent); }
       <p><span class="label">Hipótese</span><br>Seções no mesmo prédio (a mesma escola, por exemplo) recebem eleitores
         parecidos. Uma seção que vota muito diferente das outras do prédio pode ter sido manipulada.</p>
       <p><span class="label">O que olhamos</span><br>Comparamos o voto em Lula em cada seção com o das outras seções do
-        mesmo local. Por acaso, esperaríamos cerca de 1 seção extrema no país; encontramos <strong>110</strong>,
-        77 com mais votos em Lula e 33 com menos. Em 2022 foram 156 e 143, com a mesma inclinação.</p>
+        mesmo local. Por acaso, esperaríamos cerca de 1 seção extrema no país; no 1º turno encontramos <strong>110</strong>,
+        77 com mais votos em Lula e 33 com menos. No 2º turno, de novo 110: 75 e 35. Em 2022 foram 156 e 143, com a
+        mesma inclinação.</p>
       <p>O padrão tem uma marca: as seções extremas são, em geral, a <strong>última seção do prédio</strong>, a mais nova.
         Quando um local enche, o TSE cria uma seção nova e coloca nela quem acabou de tirar ou transferir o título, um
         público mais jovem. O cadastro do TSE confirma isso.</p>
       <div class="chart" aria-label="Fatia das seções comuns e das seções extremas">
-        <div class="chart-title">Quanto cada tipo de seção pesa entre todas e entre as extremas</div>
+        <div class="chart-title">Quanto cada tipo de seção pesa entre todas e entre as extremas (1º turno)</div>
         <div class="legend"><span><i class="sw" style="background:var(--accent-2)"></i>entre todas as seções</span><span><i class="sw" style="background:var(--accent)"></i>entre as 110 seções extremas</span></div>
         <div data-bars='{"max":100,"unit":"%","rows":[
           {"label":"É a última seção do prédio","bars":[[19,"s2","19%"],[57,"s1","57%"]]},
@@ -205,33 +217,35 @@ a { color: var(--accent); }
         Jovens votam diferente, e isso explica por que essas seções destoam. Sobram 41 seções extremas fora desse grupo,
         28 com mais e 13 com menos votos em Lula. É um desequilíbrio pequeno, que pode ser acaso. Essas seções são
         as candidatas a conferência manual (ata da mesa, BU impresso). Mesmo todas somadas, valem cerca de 0,3% da diferença
-        entre os candidatos.</p>
+        entre os candidatos. No 2º turno a marca se repete: 57% das extremas são a última seção do prédio.</p>
     </article>
 
     <article class="card">
       <header><h3>Comparecimento alto demais</h3><span class="verdict v-info">Explicada</span></header>
       <p><span class="label">Hipótese</span><br>Seções onde quase todo mundo votou (95% ou mais) podem ter votos
         "completados" por alguém.</p>
-      <p><span class="label">O que olhamos</span><br>Há 538 seções assim. Comparando cada uma com as outras seções do mesmo
-        município, Lula tem cerca de 5,6 pontos a mais nelas. Repetimos para 2022: lá a diferença foi de 8,4 e 6,1 pontos.</p>
+      <p><span class="label">O que olhamos</span><br>No 1º turno há 538 seções assim. Comparando cada uma com as outras
+        seções do mesmo município, Lula tem cerca de 5,6 pontos a mais nelas. No 2º turno são 620, com 7,3 pontos a mais.
+        Repetimos para 2022: lá a diferença foi de 8,4 e 6,1 pontos.</p>
       <div class="chart" aria-label="Diferença do voto em Lula nas seções de comparecimento muito alto">
         <div class="chart-title">Pontos percentuais a mais para Lula nas seções com comparecimento ≥ 95%</div>
         <div data-bars='{"max":10,"rows":[
           {"label":"2022, 1º turno","bars":[[8.36,"s0","8,4"]]},
           {"label":"2022, 2º turno","bars":[[6.12,"s0","6,1"]]},
-          {"label":"2026, 1º turno","bars":[[5.64,"s1","5,6"]]}]}'></div>
+          {"label":"2026, 1º turno","bars":[[5.64,"s1","5,6"]]},
+          {"label":"2026, 2º turno","bars":[[7.33,"s1","7,3"]]}]}'></div>
       </div>
-      <p class="takeaway">O padrão já existia em 2022, com a mesma direção, e diminuiu em 2026. Não é algo novo desta eleição.
-        Anulá-las tiraria votos do 2º colocado e não do 1º.</p>
+      <p class="takeaway">O padrão já existia em 2022, com a mesma direção e tamanho parecido. Não é algo novo desta eleição.
+        No 1º turno, anulá-las tiraria votos do 2º colocado. No 2º, tiraria do vencedor, mas só 0,85% da diferença.</p>
     </article>
 
     <article class="card">
       <header><h3>Outras suspeitas comuns</h3><span class="verdict v-ok">Descartadas</span></header>
       <p><span class="label">Biometria</span><br>Seções com mais gente votando sem a digital não votam diferente das outras
-        do mesmo município (efeito praticamente zero, em 2022 e 2026).</p>
-      <p><span class="label">Horários e urnas</span><br>Nenhuma urna abriu cedo demais, fechou antes das 17h ou emitiu o
-        boletim antes do encerramento. Os poucos casos estranhos (7 urnas carregadas no próprio dia, 2 boletins
-        emitidos mais de 2 horas depois) somam menos de 2 mil votos.</p>
+        do mesmo município (efeito praticamente zero, em 2022 e nos dois turnos de 2026).</p>
+      <p><span class="label">Horários e urnas</span><br>Em nenhum dos dois turnos uma urna abriu cedo demais, fechou antes
+        das 17h ou emitiu o boletim antes do encerramento. Os poucos casos estranhos somam menos de 2 mil votos no 1º turno
+        (7 urnas carregadas no próprio dia, 2 boletins emitidos mais de 2 horas depois) e cerca de 4 mil no 2º (5 e 10).</p>
     </article>
 
     <article class="card">
@@ -243,16 +257,57 @@ a { color: var(--accent); }
         usar, conferimos: nas 499.206 seções, a seção e o número da urna batem com o nosso boletim.</p>
       <p>No Brasil todo, a urna de 2013 deu 2 pontos a menos ao 1º colocado que a média. Mas as urnas não são
         distribuídas ao acaso: cada região recebe um lote. Comparando só urnas do mesmo prédio, a diferença entre os modelos
-        cai para 0,15 ponto, para os dois lados.</p>
+        cai para 0,15 ponto, para os dois lados. No 2º turno o resultado se repete: 2,4 pontos no Brasil todo, 0,17 no
+        mesmo prédio.</p>
       <p class="takeaway">O modelo não muda o voto. O que muda é onde cada modelo foi instalado.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Seções que mudaram muito de um turno para o outro</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">Hipótese</span><br>Se alguém mexeu nas urnas do 2º turno, algumas seções dariam ao vencedor
+        muito mais votos do que o 1º turno delas fazia prever.</p>
+      <p><span class="label">O que olhamos</span><br>Um modelo prevê o voto de cada seção no 2º turno a partir do voto dela
+        no 1º e do município. <strong>446 seções</strong> ficam muito longe da previsão, 392 delas com mais votos em Lula.
+        Mas olhando o voto real, quase todas votaram igual nos dois turnos. Em Confresa (MT), por exemplo, uma seção deu
+        296 votos a Lula no 1º turno e 309 no 2º, sem nenhum para o adversário nas duas vezes. São seções que votam muito
+        diferente do próprio município, e o modelo, que se apoia na média do município, não consegue acompanhá-las.</p>
+      <div class="chart" aria-label="Seções em que o voto em Lula entre os finalistas mudou menos de 5 pontos">
+        <div class="chart-title">Seções em que o voto em Lula entre os dois finalistas mudou menos de 5 pontos de um turno ao outro</div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent-2)"></i>todas as seções</span><span><i class="sw" style="background:var(--accent)"></i>as 446 fora da previsão</span></div>
+        <div data-bars='{"max":100,"unit":"%","rows":[
+          {"label":"Votou quase igual nos dois turnos","bars":[[82,"s2","82%"],[90,"s1","90%"]]}]}'></div>
+      </div>
+      <p>Também conferimos as 71 seções em que o comparecimento subiu mais de 15 pontos e as 4.435 (0,9%) que usaram outra
+        urna no 2º turno. Somadas, valem pouco mais de 1% da diferença entre os candidatos.</p>
+      <p class="takeaway">As seções "fora da previsão" votaram como no 1º turno. Quem erra é o modelo, não a urna. Um teste com
+        um 2º turno simulado e limpo também dá esse desequilíbrio.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>As seções marcadas no 2º turno</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">Hipótese</span><br>No 2º turno, o conjunto de seções que algum teste marcou dá ao vencedor
+        quase 1 milhão de votos a mais que ao adversário. Seria sinal de que as anomalias o favoreceram.</p>
+      <p><span class="label">O que olhamos</span><br>De onde vem esse saldo. Quase todo ele está nas 16.142
+        <strong>seções agregadas</strong>, as que recebem os eleitores de outra seção pequena, unida a ela para a votação.
+        Elas são as mesmas nos dois turnos e votam mais em Lula nos dois: 55% contra 45% das demais no 1º turno, 60%
+        contra 52% no 2º. No 1º turno, eram elas que faziam o conjunto marcado pender para Lula, então o 2º colocado.</p>
+      <div class="chart" aria-label="Parte da diferença do 2º turno que as seções marcadas valem">
+        <div class="chart-title">Parte da diferença de 4,4 milhões de votos que se perderia anulando as seções marcadas</div>
+        <div data-bars='{"max":100,"unit":"%","rows":[
+          {"label":"Todas as 21.983 marcadas","bars":[[22.5,"s1","22,5%"]]},
+          {"label":"Sem as seções agregadas","bars":[[3.8,"s1","3,8%"]]},
+          {"label":"Sem elas e sem as comparações entre turnos","bars":[[1.4,"s1","1,4%"]]}]}'></div>
+      </div>
+      <p class="takeaway">O saldo segue Lula, não o vencedor: está nas mesmas seções e na mesma direção nos dois turnos. Sem
+        as seções agregadas, o que sobra vale menos de 4% da diferença. Mesmo anulando todas as marcadas, o resultado não
+        mudaria.</p>
     </article>
 
     <div class="card">
       <span class="label">Conclusão da parte 1</span>
-      <p>Nenhum teste encontrou algo capaz de mudar o resultado. Os padrões que chamam atenção, como seções que destoam
-        das vizinhas e comparecimento alto, aparecem igualmente em 2022 e têm explicação no perfil do eleitorado. O que
-        sobra é pequeno demais para pesar no resultado e merece apenas conferência manual.</p>
-      <p class="small">O 2º turno ainda não está nesta análise: os boletins são processados assim que o TSE publica todas as UFs.</p>
+      <p>Em nenhum dos dois turnos um teste encontrou algo capaz de mudar o resultado. Os padrões que chamam atenção,
+        como seções que destoam das vizinhas e comparecimento alto, aparecem igualmente em 2022 e têm explicação no perfil
+        do eleitorado. O que sobra é pequeno demais para pesar no resultado e merece apenas conferência manual.</p>
     </div>
   </section>
 
