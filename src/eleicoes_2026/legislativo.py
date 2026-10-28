@@ -2,7 +2,8 @@
 
 Fontes:
     Portal da Transparência  emendas parlamentares (valor por emenda e município; pagamentos por mês e favorecido)
-    TSE                      candidatos a deputado federal e votos por município, 2022 e 2026
+    TSE                      candidatos a deputado federal e votos por município, 2022 e 2026; receitas de campanha
+                             dos candidatos a deputado federal em 2026
     Câmara dos Deputados     deputados, votações nominais, orientações de bancada e frentes parlamentares (57ª legislatura)
 
 Saídas (em data/processed/legislativo):
@@ -10,6 +11,7 @@ Saídas (em data/processed/legislativo):
     emendas_pagamentos.parquet    pagamentos por emenda, mês e favorecido (com o código IBGE do município do favorecido)
     candidatos_depfed.parquet     candidatos a deputado federal, 2022 e 2026
     votos_depfed_municipio.parquet votos por candidato e município (código TSE), 2022 e 2026
+    receitas_depfed.parquet       receitas de campanha por candidato a deputado federal em 2026, por origem
     camara_deputados.parquet, camara_votacoes.parquet, camara_votos.parquet, camara_orientacoes.parquet,
     camara_frentes.parquet
     ligacao_deputados.parquet     um deputado da Câmara (56ª/57ª legislatura) por linha, com o candidato do TSE em 2022
@@ -18,11 +20,13 @@ Saídas (em data/processed/legislativo):
     ligacao_municipios.parquet    código de município do TSE <-> código do IBGE
 
 Uso:
-    uv run coletar-legislativo
+    uv run coletar-legislativo                 # tudo
+    uv run coletar-legislativo --etapas contas # só uma parte (emendas, tse, contas, camara, ligacoes)
 """
 
 from __future__ import annotations
 
+import argparse
 import difflib
 import re
 import shutil
@@ -40,6 +44,8 @@ from .download import session
 
 URL_EMENDAS = "https://portaldatransparencia.gov.br/download-de-dados/emendas-parlamentares/UNICO"
 URL_TSE = "https://cdn.tse.jus.br/estatistica/sead/odsele/{tabela}/{tabela}_{ano}.zip"
+# Atualizado todo dia pelo TSE até a prestação de contas final (30 dias após a eleição): apague o zip para baixar de novo.
+URL_CONTAS = "https://cdn.tse.jus.br/estatistica/sead/odsele/prestacao_contas/prestacao_de_contas_eleitorais_candidatos_{ano}.zip"
 URL_IBGE = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 URL_CAMARA = "https://dadosabertos.camara.leg.br/arquivos/{tabela}/csv/{tabela}{sufixo}.csv"
 ANOS_ELEICAO = (2022, 2026)
@@ -130,6 +136,23 @@ WHERE CD_CARGO = '{CD_CARGO_DEPUTADO_FEDERAL}'
 GROUP BY ALL
 """
 
+# Cada candidato aparece só com a última prestação entregue (parcial, relatório financeiro ou final). Algumas receitas
+# vêm repetidas linha a linha; o DISTINCT tira só as repetições idênticas.
+SELECT_RECEITAS = f"""
+WITH r AS (
+    SELECT DISTINCT * EXCLUDE (DT_GERACAO, HH_GERACAO) FROM {_csv()} WHERE CD_CARGO = '{CD_CARGO_DEPUTADO_FEDERAL}'
+)
+SELECT
+    AA_ELEICAO::INT AS ano, SG_UF AS uf, SQ_CANDIDATO AS sq_candidato, any_value(TP_PRESTACAO_CONTAS) AS tipo_prestacao,
+    sum({_reais('VR_RECEITA')}) AS receitas,
+    sum({_reais('VR_RECEITA')}) FILTER (DS_FONTE_RECEITA = 'FUNDO ESPECIAL') AS receitas_fefc,
+    sum({_reais('VR_RECEITA')}) FILTER (DS_FONTE_RECEITA = 'FUNDO PARTIDARIO') AS receitas_fundo_partidario,
+    sum({_reais('VR_RECEITA')}) FILTER (DS_ORIGEM_RECEITA = 'Recursos de pessoas físicas') AS receitas_pessoas_fisicas,
+    sum({_reais('VR_RECEITA')}) FILTER (DS_ORIGEM_RECEITA = 'Recursos próprios') AS receitas_proprias
+FROM r
+GROUP BY ALL
+"""
+
 
 def _baixar(url: str, dest: Path) -> Path:
     if dest.exists():
@@ -188,6 +211,13 @@ def tse(con) -> None:
         votos.append(_do_zip(con, z, f"{tabela}_{ano}_BRASIL.csv", SELECT_VOTOS))
     _gravar(pd.concat(cands, ignore_index=True), "candidatos_depfed")
     _gravar(pd.concat(votos, ignore_index=True), "votos_depfed_municipio")
+
+
+def contas(con, ano: int = 2026) -> None:
+    print(f"TSE: receitas de campanha dos candidatos a deputado federal ({ano})")
+    nome = f"prestacao_de_contas_eleitorais_candidatos_{ano}"
+    z = _baixar(URL_CONTAS.format(ano=ano), RAW / "tse" / f"{nome}.zip")
+    _gravar(_do_zip(con, z, f"receitas_candidatos_{ano}_BRASIL.csv", SELECT_RECEITAS), "receitas_depfed")
 
 
 def camara(con) -> None:
@@ -413,14 +443,21 @@ def ligar_municipios():
     _gravar(lig.drop(columns="k"), "ligacao_municipios")
 
 
+ETAPAS = ("emendas", "tse", "contas", "camara", "ligacoes")
+
+
 def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--etapas", nargs="+", choices=ETAPAS, default=ETAPAS)
+    etapas = ap.parse_args(argv).etapas
     con = duckdb.connect()
-    emendas(con)
-    tse(con)
-    camara(con)
-    print("Ligações entre as bases")
-    ligar_municipios()
-    ligar_deputados()
+    for etapa in ("emendas", "tse", "contas", "camara"):
+        if etapa in etapas:
+            globals()[etapa](con)
+    if "ligacoes" in etapas:
+        print("Ligações entre as bases")
+        ligar_municipios()
+        ligar_deputados()
     return 0
 
 

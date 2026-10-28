@@ -226,33 +226,63 @@ for t in TURNOS:
     print("   → se os dois candidatos 'reprovam' igualmente, o teste não aponta favorecimento de nenhum lado.")
 """),
 ("md", r"""
-## A8. "Lotes de urnas votam diferente" (proxy do argumento de 2022 sobre modelos de urna)
-**Hipótese:** urnas de um lote/modelo teriam software diferente e dariam mais votos a um candidato.
-O CSV do BU não traz o modelo; usamos como proxy a **faixa do número de série da urna** (decis) e a **data de carga**.
-**Teste ingênuo:** % do candidato por decil. **Controle:** regressão com efeito fixo de município — lotes de urnas são
-distribuídos regionalmente, então diferenças brutas refletem geografia.
-*(Para usar o modelo real, é preciso extrair dos logs de urna — ver "arquivos transmitidos para totalização" no portal.)*
+## A8. "O modelo da urna muda o voto" (o argumento de 2022 sobre as urnas antigas)
+**Hipótese:** urnas de um modelo teriam software ou hardware diferente e dariam mais votos a um candidato.
+O CSV do BU não traz o modelo. Ele vem de `uv run modelo-urna`, que usa os BUs binários decodificados pelo projeto
+DataUrnas-BR (modelo conferido com o certificado digital de cada urna) e confere seção e número da urna com o nosso BU.
+No 2º turno, o modelo vem do número da urna, que na maioria das seções é a mesma do 1º.
+**Teste ingênuo:** % do candidato por modelo. **Controle:** a mesma comparação dentro do município e dentro do local de
+votação. Os modelos não são distribuídos ao acaso: as urnas novas vão primeiro para algumas regiões, então a diferença
+bruta mistura modelo e geografia. Dentro do mesmo prédio, a geografia sai da conta.
 """),
 ("code", r"""
-for t in TURNOS:
-    df = T[t]
-    a, _ = A.principais(df, 2)
-    d = df[(df["votos_validos"] > 0) & df["nr_urna_efetivada"].notna() & (df["uf"] != "ZZ")].copy()
-    d["serie"] = pd.to_numeric(d["nr_urna_efetivada"], errors="coerce")
-    d = d.dropna(subset=["serie"])
-    d["decil"] = pd.qcut(d["serie"], 10, labels=False, duplicates="drop")
-    d["sh"] = d[a] / d["votos_validos"] * 100
-    d["mun"] = d["uf"].astype(str) + d["cd_municipio"].astype(str)
-    ing = d.groupby("decil").apply(lambda g: np.average(g["sh"], weights=g["votos_validos"]))
-    # efeito fixo via demeaning (muitos municípios)
-    w = d["votos_validos"]
-    sh_dm = d["sh"] - (d["sh"] * w).groupby(d["mun"]).transform("sum") / w.groupby(d["mun"]).transform("sum")
-    fe = sh_dm.groupby(d["decil"]).apply(lambda s: np.average(s, weights=w[s.index]))
-    out = pd.DataFrame({"ingênuo (% média)": ing, "dentro do município (p.p. vs média local)": fe})
-    print(f"{t}º turno — % de {a} por decil do nº de série da urna")
-    display(out)
-    print(f"   amplitude ingênua: {ing.max()-ing.min():.1f} p.p. | amplitude controlada: {fe.max()-fe.min():.2f} p.p.")
-    ax = out.plot(subplots=True, layout=(1, 2), figsize=(13, 3.5), marker="o", legend=False, title=list(out.columns)); plt.show()
+ARQ_MODELO = A.PROCESSED / "modelo_urna.parquet"
+if not ARQ_MODELO.exists():
+    print("Rode `uv run modelo-urna` para ter o modelo da urna; esta seção fica de fora.")
+else:
+    MOD = pd.read_parquet(ARQ_MODELO)
+    por_urna = MOD.drop_duplicates("nr_urna").set_index("nr_urna")["modelo_urna"]
+    for t in TURNOS:
+        df = T[t]
+        a, _ = A.principais(df, 2)
+        d = df[(df["votos_validos"] > 0) & (df["uf"] != "ZZ")].copy()
+        d = d.merge(MOD[["uf", "cd_municipio", "nr_zona", "nr_secao", "modelo_urna"]], on=["uf", "cd_municipio", "nr_zona", "nr_secao"], how="left")
+        sem = d["modelo_urna"].isna()
+        d.loc[sem, "modelo_urna"] = pd.to_numeric(d.loc[sem, "nr_urna_efetivada"], errors="coerce").map(por_urna)
+        print(f"{t}º turno: modelo identificado em {d['modelo_urna'].notna().mean():.1%} das seções "
+              f"({(~sem).mean():.1%} pela seção, o resto pelo número da urna)")
+        d = d.dropna(subset=["modelo_urna"])
+        d["sh"] = d[a] / d["votos_validos"] * 100
+        w = d["votos_validos"]
+        out = pd.DataFrame({"seções": d["modelo_urna"].value_counts().sort_index(),
+                            "ingênuo (% média)": d.groupby("modelo_urna").apply(lambda g: np.average(g["sh"], weights=g["votos_validos"]))})
+        for nome, grupo in (("município", ["uf", "cd_municipio"]), ("local de votação", ["uf", "cd_municipio", "nr_zona", "nr_local_votacao"])):
+            g = d.groupby(grupo, observed=True)
+            # só grupos com mais de um modelo informam a comparação
+            mistos = g["modelo_urna"].transform("nunique") > 1
+            media = (d["sh"] * w).groupby([d[c] for c in grupo]).transform("sum") / w.groupby([d[c] for c in grupo]).transform("sum")
+            dm = (d["sh"] - media)[mistos]
+            out[f"dentro do {nome} (p.p.)"] = dm.groupby(d.loc[mistos, "modelo_urna"]).apply(lambda s: np.average(s, weights=w[s.index]))
+            out[f"seções em {nome} misto"] = mistos.groupby(d["modelo_urna"]).sum()
+        print(f"% de {a} por modelo de urna")
+        display(out)
+        print(f"   amplitude ingênua: {out['ingênuo (% média)'].max() - out['ingênuo (% média)'].min():.1f} p.p. | "
+              f"dentro do município: {out['dentro do município (p.p.)'].max() - out['dentro do município (p.p.)'].min():.2f} p.p. | "
+              f"dentro do local: {out['dentro do local de votação (p.p.)'].max() - out['dentro do local de votação (p.p.)'].min():.2f} p.p.")
+        # mesma escala nas três comparações, para que a diferença bruta e a controlada se vejam lado a lado
+        g = pd.DataFrame({"Brasil todo (sem controle)": out["ingênuo (% média)"] - np.average(d["sh"], weights=w),
+                          "mesmo município": out["dentro do município (p.p.)"],
+                          "mesmo local de votação": out["dentro do local de votação (p.p.)"]})
+        ax = g.plot.bar(rot=0, width=.8, color=["0.6", "C1", "C2"], figsize=(10, 4))
+        ax.axhline(0, color="k", lw=.8); ax.set_xlabel("")
+        ax.set_ylabel("p.p. acima ou abaixo da média")
+        ax.set_title(f"{t}º turno: voto em {a} por modelo de urna", weight="bold")
+        ax.legend(title="comparando com urnas do"); plt.show()
+"""),
+("md", r"""
+**Leitura.** A diferença bruta entre modelos (cerca de 2 p.p. no 1º turno) quase some quando se comparam urnas do mesmo
+município e some de vez dentro do mesmo local de votação (décimos de ponto, para os dois lados). Ela vem de onde cada
+modelo foi instalado, não do modelo. O argumento de 2022 de que as urnas antigas votavam diferente não se sustenta nestes dados.
 """),
 ("md", r"""
 ## A9. "Virada" durante a apuração

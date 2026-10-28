@@ -12,9 +12,9 @@ converte para Parquet e gera notebooks com gráficos e testes de anomalia:
 
 ## Destaques
 
-O resumo em linguagem simples, com todas as hipóteses testadas, está em
-[`relatorio/hipoteses_e_conclusoes.html`](relatorio/hipoteses_e_conclusoes.html) (baixe e abra no navegador). Alguns
-resultados:
+**[Leia o relatório em linguagem simples](https://marcospflbarreto.github.io/eleicoes-2026/)**, com todas as hipóteses
+testadas e o que cada uma concluiu (fonte em [`docs/index.html`](docs/index.html)). Os números são mostrados com o
+teste que os põe em contexto; anomalia estatística indica onde olhar, não prova irregularidade. Alguns resultados:
 
 **Nenhum boletim de urna com conta errada.** Em 2026 e nos dois turnos de 2022, todas as seções têm votos somando o
 comparecimento, e o comparecimento cabe no número de eleitores aptos. Para inverter a ordem do 1º turno de 2026 seria
@@ -25,7 +25,13 @@ vantagem de quem ficou em primeiro.
 UFs. Mas uma eleição simulada, limpa por construção e com os mesmos tamanhos de seção, reprova o mesmo número. O teste
 mede a forma da distribuição dos votos, não fraude.
 
-![UFs reprovadas no teste de Benford: eleição real e simulações sem fraude](docs/img/benford_simulacao.png)
+![Gráfico de pontos: em 2022 (1º e 2º turnos) e em 2026, a eleição real reprova o teste de Benford em 26 das 28 UFs, e as eleições simuladas sem fraude reprovam entre 25 e 28, o mesmo patamar](docs/img/benford_simulacao.png)
+
+**O modelo da urna não muda o voto.** As urnas de 2026 são de quatro modelos, de 2013 a 2022. Na média nacional, o voto
+no 1º colocado varia 2,3 pontos entre modelos. Comparando só urnas do mesmo prédio, a diferença cai para 0,15 ponto: ela
+vem de onde cada modelo foi instalado, não do modelo.
+
+![Barras por modelo de urna no 1º turno de 2026: no Brasil todo, a urna UE2013 tem 2 pontos a menos de voto em Flávio Bolsonaro que a média; comparada com urnas do mesmo município ou do mesmo local de votação, a diferença é de décimos de ponto, e os outros modelos ficam perto de zero nas três comparações](docs/img/modelo_urna.png)
 
 **As seções que destoam do próprio prédio são as mais novas, com eleitorado mais jovem.** Há cerca de 110 seções que
 votam muito diferente das outras do mesmo local, contra ~1 esperada por acaso. O padrão é igual ao de 2022. 57% delas são
@@ -33,21 +39,22 @@ a última seção do prédio, que é só 19% de todas as seções. É nessa seç
 transferir o título. Seções com 10 pontos ou mais de eleitores de 16 a 24 anos a mais que o resto do prédio são 7% do
 total, mas 59% das extremas.
 
-![Seções extremas por tipo de seção, 2022 e 2026](docs/img/secoes_extremas.png)
+![Barras horizontais: em 2022 e 2026, a última seção de cada prédio tem mais seções extremas que todas as outras seções juntas; em 2022 elas pendem fortemente para Lula, em 2026 para os dois lados](docs/img/secoes_extremas.png)
 
-![Voto em Lula vs. o local e diferença de eleitores jovens, por seção](docs/img/secoes_jovens.png)
+![Dispersão: a nuvem de seções normais fica em torno de zero; as seções extremas, em vermelho, aparecem acima e abaixo e se espalham para a direita, onde a seção tem muito mais eleitores de 16 a 24 anos que o resto do prédio](docs/img/secoes_jovens.png)
 
 **Em ano de eleição, as emendas são pagas antes de julho.** A lei proíbe essas transferências nos três meses antes da
 votação. Em 2026, 90% do ano foi pago no 1º semestre, contra 19% em 2025; em 2024, ano de eleição municipal, 52%.
 
-![Pagamentos de emendas parlamentares por mês, 2022 a 2026](docs/img/emendas_por_mes.png)
+![Barras mensais de 2022 a 2026: nos anos de eleição (2022, 2024 e 2026) os pagamentos disparam entre maio e julho, com pico de 16 bilhões de reais em maio de 2026, e despencam nos três meses antes da votação, quando a lei proíbe essas transferências; em 2023 e 2025 se espalham pelo segundo semestre](docs/img/emendas_por_mes.png)
 
 **Quanto o deputado destina não explica a reeleição, mas para onde destina, sim.** A cota de emendas individuais é igual
 por lei, e o valor pago quase não varia. O que se associa a mais votos em 2026 é concentrar as emendas nos municípios
-que elegeram o deputado em 2022. A relação vale também comparando deputados do mesmo partido e do mesmo estado. É
-associação, não prova de causa, e faltam os gastos de campanha.
+que elegeram o deputado em 2022. A relação vale também comparando deputados do mesmo partido e do mesmo estado. O
+dinheiro de campanha pesa mais na reeleição (cada R$ 1 milhão a mais de receita, cerca de 11 pontos de chance), mas não
+anda junto com a concentração na base: controlar pelas receitas não muda essa relação. É associação, não prova de causa.
 
-![Taxa de reeleição e variação de votos por concentração das emendas na base eleitoral](docs/img/emendas_base_reeleicao.png)
+![Dois gráficos de barras por terço de deputados: quem pôs menos emendas na base (18% na base) se reelegeu 62% das vezes e perdeu 7% dos votos; o terço do meio (32%) se reelegeu 74% e ganhou 2%; quem mais concentrou (50%) se reelegeu 80% e ganhou 5%](docs/img/emendas_base_reeleicao.png)
 
 As figuras são copiadas dos notebooks por `uv run python scripts/figuras_readme.py`.
 
@@ -66,7 +73,8 @@ uv run baixar                     # baixa o BU dos 2 turnos (≈5 GB por turno),
 uv run processar                  # filtra o cargo Presidente e gera data/processed/*.parquet (~2 min por turno)
 uv run perfil                     # perfil do eleitorado por seção e cadastro de locais de votação (~3 GB)
 ELEICOES_ANO=2022 uv run baixar && ELEICOES_ANO=2022 uv run processar   # eleição de 2022, usada como referência
-uv run coletar-legislativo        # emendas, deputados federais (TSE 2022/2026) e votações da Câmara (~1,5 GB)
+uv run coletar-legislativo        # emendas, deputados federais (TSE 2022/2026), receitas de campanha e votações da Câmara (~2 GB)
+uv run modelo-urna                # modelo da urna de cada seção (DataUrnas-BR), conferido com o BU
 uv run python scripts/gerar_notebooks.py --executar   # gera e executa os notebooks
 uv run jupyter lab                # para explorar interativamente
 ```
@@ -91,6 +99,7 @@ desempenho dos deputados federais em 2022 e 2026:
 |---|---|---|
 | `emendas`, `emendas_pagamentos` | Portal da Transparência | valor por emenda; pagamentos por mês e favorecido, com o município (IBGE) |
 | `candidatos_depfed`, `votos_depfed_municipio` | TSE | candidatos a deputado federal e votos por município, 2022 e 2026 |
+| `receitas_depfed` | TSE | receitas de campanha por candidato a deputado federal em 2026, por origem (FEFC, fundo partidário, pessoas físicas, próprias) |
 | `camara_*` | Câmara dos Deputados | deputados, votações nominais, orientação das bancadas (inclusive do governo), frentes |
 | `ligacao_deputados`, `ligacao_autores_emendas`, `ligacao_municipios` | — | deputado da Câmara ↔ candidato do TSE ↔ autor da emenda; município TSE ↔ IBGE |
 
@@ -102,7 +111,10 @@ intermediário (cerca de R$ 20 bi em 2023–2026), e por isso o município de de
 O notebook 04 usa essas tabelas. A tabela por deputado (`eleicoes_2026.emendas.painel_deputados()`) considera as emendas
 individuais dos orçamentos de 2024 a 2026 pagas até setembro de 2026: as do orçamento de 2023 foram apresentadas pela
 legislatura anterior. A "base eleitoral" de um deputado são os municípios que, somados, deram metade dos votos dele
-em 2022. Ainda faltam os gastos de campanha de 2026 e a análise por município (emendas × variação de votos).
+em 2022. As receitas de campanha são as declaradas até agora: a prestação de contas final vence 30 dias depois da eleição,
+e o TSE atualiza o arquivo todo dia (apague `data/raw/tse/prestacao_de_contas_eleitorais_candidatos_2026.zip` e rode
+`uv run coletar-legislativo --etapas contas` para atualizar). Ainda falta a análise por município (emendas × variação de
+votos).
 
 ## Estrutura
 
@@ -112,6 +124,7 @@ src/eleicoes_2026/
   download.py    descoberta via API CKAN + download com verificação SHA-512
   perfil.py      perfil do eleitorado por seção (idade, escolaridade) e locais de votação
   legislativo.py emendas parlamentares, deputados federais e votações da Câmara, com as ligações entre as bases
+  modelo_urna.py modelo da urna por seção (DataUrnas-BR), conferido com o BU
   emendas.py     tabela por deputado (emendas pagas, base eleitoral, governismo, resultado em 2026) para o notebook 04
   process.py     zip → Parquet (DuckDB), tabela longa e tabela por seção
   analise.py     funções estatísticas usadas pelos notebooks
@@ -141,8 +154,9 @@ reproduzíveis. Edições feitas direto no `.ipynb` são sobrescritas.
 
 ## Limitações
 
-- O CSV do BU não informa o **modelo da urna**. O notebook adversarial usa a faixa do nº de série e a data de carga
-  como aproximação. Para ter o modelo real é preciso processar os logs das urnas ("arquivos transmitidos para
-  totalização", também no portal do TSE).
+- O CSV do BU não informa o **modelo da urna**. Ele vem do projeto [DataUrnas-BR](https://github.com/alissonlinneker/DataUrnas-BR),
+  que decodificou os BUs binários e conferiu o modelo com o certificado de cada urna. `uv run modelo-urna` usa uma versão
+  fixa dessa tabela e só a grava se seção e número da urna baterem com o BU do TSE (bateram nas 499.206 seções do 1º
+  turno). No 2º turno o modelo vem do número da urna.
 - Os horários do BU estão no fuso local. O fuso de cada município é deduzido da hora de abertura mais comum ali, e o exterior fica de fora.
 - Anomalia estatística não prova irregularidade. Ela só indica seções a inspecionar: BU impresso, log da urna, ata da mesa.

@@ -77,7 +77,8 @@ def base_eleitoral(con: duckdb.DuckDBPyConnection | None = None, ano: int = 2022
 
 
 def painel_deputados() -> pd.DataFrame:
-    """Uma linha por deputado eleito em 2022 (titular), com emendas, votação, governismo e resultado em 2026."""
+    """Uma linha por deputado eleito em 2022 (titular), com emendas, votação, governismo, receitas de campanha e
+    resultado em 2026."""
     con = duckdb.connect()
     dep = con.sql(f"""
         SELECT id_camara, nome, uf, idLegislaturaInicial::INT < 57 AS veterano, sq_candidato_2022, sg_partido_2022, resultado_2022,
@@ -121,6 +122,12 @@ def painel_deputados() -> pd.DataFrame:
     dep = (dep.merge(em, on="id_camara", how="left").merge(governismo(con), on="id_camara", how="left")
               .merge(n_base, on="id_camara", how="left"))
     dep["emendas_pagas"] = dep["emendas_pagas"].fillna(0)
+
+    rec = pd.read_parquet(LEG / "receitas_depfed.parquet")[["sq_candidato", "tipo_prestacao", "receitas", "receitas_fefc"]]
+    dep = dep.merge(rec.rename(columns={"sq_candidato": "sq_candidato_2026", "tipo_prestacao": "tipo_prestacao_2026",
+                                        "receitas": "receitas_2026", "receitas_fefc": "receitas_fefc_2026"}),
+                    on="sq_candidato_2026", how="left")
+    dep["pct_fefc_2026"] = dep["receitas_fefc_2026"].fillna(0) / dep["receitas_2026"]
 
     dep["concorreu_2026"] = dep["sq_candidato_2026"].notna()
     dep["reeleito"] = dep["resultado_2026"].fillna("").str.startswith("ELEITO")

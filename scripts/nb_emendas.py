@@ -16,8 +16,9 @@ Os dados vêm de `uv run coletar-legislativo` (Portal da Transparência, TSE e C
 `eleicoes_2026.emendas.painel_deputados()`.
 
 **O que este notebook não consegue dizer.** É uma análise de associação, não de causa: deputados que já eram fortes podem
-tanto conseguir executar mais emendas quanto se reeleger mais. Faltam os gastos de campanha de 2026 (a prestação de
-contas final ainda não foi publicada), que são o principal fator conhecido de reeleição.
+tanto conseguir executar mais emendas quanto se reeleger mais. As receitas de campanha de 2026, principal fator conhecido
+de reeleição, entram como controle, mas ainda são as declaradas até agora: a prestação de contas final vence 30 dias depois
+da eleição.
 """),
 ("code", r"""
 import warnings
@@ -231,6 +232,23 @@ display(r.groupby(pd.cut(r["governismo"], [0, .4, .6, .8, .9, 1]), observed=True
          .agg(deputados=("reeleito", "size"), taxa_reeleicao=("reeleito", "mean"), mudou_partido=("mudou_partido", "mean")))
 """),
 ("md", r"""
+### Dinheiro de campanha
+Receitas declaradas ao TSE pela candidatura de 2026 (`uv run coletar-legislativo --etapas contas`). A maior parte vem do
+Fundo Especial de Financiamento de Campanha (FEFC), que o partido distribui como quiser. O teto de gastos para deputado
+federal limita o valor. Cada candidato aparece com a última prestação entregue; quem ainda não entregou a final pode ter
+receitas faltando.
+"""),
+("code", r"""
+print("Última prestação entregue, por resultado:")
+display(pd.crosstab(r["tipo_prestacao_2026"].fillna("nenhuma"), r["reeleito"].map({1: "reeleito", 0: "não reeleito"}),
+                    normalize="columns").round(2))
+display(taxa_por_faixa("receitas_2026"))
+print(f"Mediana das receitas: R$ {r['receitas_2026'].median() / 1e6:.2f} milhões, "
+      f"{r['pct_fefc_2026'].median():.0%} delas do FEFC.")
+print("Correlação de Spearman das receitas com a concentração na base:",
+      f"{r[['receitas_2026', 'pct_na_base']].corr('spearman').iloc[0, 1]:+.2f}")
+"""),
+("md", r"""
 **Regressões.** Duas medidas de resultado, para quem disputou em 2026:
 - `reeleito` (0 ou 1), em modelo de probabilidade linear: o coeficiente é a mudança na chance de reeleição;
 - `crescimento_votos`: log dos votos em 2026 sobre os de 2022 (0,10 ≈ 10% mais votos).
@@ -238,30 +256,41 @@ display(r.groupby(pd.cut(r["governismo"], [0, .4, .6, .8, .9, 1]), observed=True
 Controles: força eleitoral em 2022 (log da fatia dos votos da UF), se é veterano (já era deputado antes de 2023), se
 mudou de partido, número de municípios na base (deputados de base concentrada têm menos municípios onde a emenda "conta")
 e efeitos fixos de UF. Erros-padrão robustos (HC1). `emendas_pagas` entra em R$ 10 milhões.
+
+Cada relação é estimada em quatro modelos: só esses controles (`UF`), mais efeito fixo de partido (`UF + partido`), mais
+as receitas de campanha de 2026 em R$ milhões (`UF + receitas`) e com os dois (`UF + partido + receitas`). As receitas
+podem ser em parte consequência da força do deputado (o partido manda mais dinheiro para quem tem mais chance), então o
+modelo com elas é um teste de robustez, não a estimativa principal.
 """),
 ("code", r"""
 r["emendas_10mi"] = r["emendas_pagas"] / 1e7
 r["log_fatia_2022"] = np.log(r["fatia_uf_2022"])
 r["log_mun_base"] = np.log(r["n_municipios_base"])
+r["receitas_mi"] = r["receitas_2026"] / 1e6
 CONTROLES = "log_fatia_2022 + veterano + mudou_partido + log_mun_base + C(uf)"
+MODELOS = {"UF": "", "UF + partido": " + C(sg_partido_2022)", "UF + receitas": " + receitas_mi",
+           "UF + partido + receitas": " + C(sg_partido_2022) + receitas_mi"}
+amostra = r[r["receitas_mi"].notna()]  # a mesma amostra em todos os modelos: quem tem receitas declaradas
 
 linhas = []
 for y in ("reeleito", "crescimento_votos"):
-    for x in ("emendas_10mi", "pct_na_base", "pct_especial", "pct_pago_2026", "governismo"):
-        for extra, nome in (("", "UF"), (" + C(sg_partido_2022)", "UF + partido")):
-            mod = smf.ols(f"{y} ~ {x} + {CONTROLES}{extra}", data=r).fit(cov_type="HC1")
+    for x in ("emendas_10mi", "pct_na_base", "pct_especial", "pct_pago_2026", "governismo", "receitas_mi"):
+        for nome, extra in MODELOS.items():
+            if x == "receitas_mi" and "receitas" not in nome:
+                continue
+            mod = smf.ols(f"{y} ~ {x} + {CONTROLES}{extra}", data=amostra).fit(cov_type="HC1")  # patsy ignora termo repetido
             ic = mod.conf_int().loc[x]
-            linhas.append({"resultado": y, "variável": x, "efeitos fixos": nome, "coef": mod.params[x],
+            linhas.append({"resultado": y, "variável": x, "modelo": nome, "coef": mod.params[x],
                            "IC 95% inf": ic[0], "IC 95% sup": ic[1], "p": mod.pvalues[x], "n": int(mod.nobs)})
-R = pd.DataFrame(linhas).set_index(["resultado", "variável", "efeitos fixos"])
+R = pd.DataFrame(linhas).set_index(["resultado", "variável", "modelo"])
 R.style.format({"coef": "{:.3f}", "IC 95% inf": "{:.3f}", "IC 95% sup": "{:.3f}", "p": "{:.3f}", "n": "{:d}"}) \
     .map(lambda v: "font-weight: bold" if v < .05 else "", subset=["p"])
 """),
 ("code", r"""
-fig, axs = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+fig, axs = plt.subplots(1, 2, figsize=(14, 9), sharey=True)
 for ax, y in zip(axs, ("reeleito", "crescimento_votos")):
     s = R.xs(y).reset_index()
-    s["rótulo"] = s["variável"] + " (" + s["efeitos fixos"] + ")"
+    s["rótulo"] = s["variável"] + " (" + s["modelo"] + ")"
     ax.errorbar(s["coef"], range(len(s)), xerr=[s["coef"] - s["IC 95% inf"], s["IC 95% sup"] - s["coef"]], fmt="o", capsize=3)
     ax.axvline(0, color="k", lw=.8); ax.set_title(y)
     ax.set_yticks(range(len(s)), s["rótulo"]); ax.invert_yaxis()
@@ -304,6 +333,9 @@ plt.tight_layout(); plt.show()
 - **Transferência especial e pagamento no ano da eleição:** nenhuma associação.
 - **Governismo:** a oposição (quase toda do PL) se reelegeu mais que o centro. Com efeito fixo de partido a diferença na
   reeleição some, ou seja, é efeito do partido, não das emendas.
+- **Receitas de campanha:** é a variável mais associada à reeleição (cada R$ 1 milhão a mais, cerca de 11 pontos de
+  chance), mas não ao crescimento dos votos. Incluí-la quase não muda os outros coeficientes: o dinheiro de campanha não
+  anda junto com a concentração das emendas na base (correlação perto de zero), então não explica essa relação.
 """),
 ("md", r"""
 ## 6. Resumo automático
@@ -323,8 +355,11 @@ print(f"                                     → crescimento dos votos: {frase('
 print(f"  (com efeito fixo de partido: {frase('crescimento_votos', 'pct_na_base', 'UF + partido')})")
 print(f"• Fração em transferência especial → crescimento dos votos: {frase('crescimento_votos', 'pct_especial')}")
 print(f"• Governismo → chance de reeleição: {frase('reeleito', 'governismo')}")
+print(f"• Mais R$ 1 milhão de receitas de campanha → chance de reeleição: {frase('reeleito', 'receitas_mi', 'UF + receitas')}")
+print(f"  Concentração na base → crescimento dos votos, controlando partido e receitas: "
+      f"{frase('crescimento_votos', 'pct_na_base', 'UF + partido + receitas')}")
 print("\nLembretes: associação, não causa. Deputados com base sólida podem tanto mandar mais emendas para ela quanto crescer")
-print("nos votos por outros motivos. Faltam os gastos de campanha de 2026. A pergunta B (emendas × votos por município,")
-print("com efeitos fixos de deputado e município) controla melhor esses fatores e é o próximo passo.")
+print("nos votos por outros motivos. As receitas de campanha ainda não são as da prestação final. A pergunta B (emendas ×")
+print("votos por município, com efeitos fixos de deputado e município) controla melhor esses fatores e é o próximo passo.")
 """),
 ]

@@ -1,4 +1,5 @@
 <title>Urnas e Emendas 2026</title>
+<meta name="description" content="O que os boletins de urna e as emendas parlamentares mostram sobre a eleição de 2026, explicado sem estatística.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -231,8 +232,19 @@ a { color: var(--accent); }
       <p><span class="label">Horários e urnas</span><br>Nenhuma urna abriu cedo demais, fechou antes das 17h ou emitiu o
         boletim antes do encerramento. Os poucos casos estranhos (7 urnas carregadas no próprio dia, 2 boletins
         emitidos mais de 2 horas depois) somam menos de 2 mil votos.</p>
-      <p><span class="label">Modelo da urna</span><br>Urnas mais antigas parecem votar diferente (até 7,8 pontos), mas é
-        porque cada região recebeu um lote. Comparando dentro do mesmo município, a diferença cai para 0,4 ponto.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>O modelo da urna muda o voto?</h3><span class="verdict v-ok">Descartada</span></header>
+      <p><span class="label">Hipótese</span><br>Em 2022 se disse que as urnas mais antigas davam votos diferentes das
+        novas. Em 2026 há quatro modelos em uso, fabricados entre 2013 e 2022.</p>
+      <p><span class="label">O que olhamos</span><br>O arquivo público do boletim não diz o modelo. Ele vem do projeto
+        aberto DataUrnas-BR, que leu o boletim digital de cada urna e conferiu o modelo com o certificado dela. Antes de
+        usar, conferimos: nas 499.206 seções, a seção e o número da urna batem com o nosso boletim.</p>
+      <p>No Brasil todo, a urna de 2013 deu 2 pontos a menos ao 1º colocado que a média. Mas as urnas não são
+        distribuídas ao acaso: cada região recebe um lote. Comparando só urnas do mesmo prédio, a diferença entre os modelos
+        cai para 0,15 ponto, para os dois lados.</p>
+      <p class="takeaway">O modelo não muda o voto. O que muda é onde cada modelo foi instalado.</p>
     </article>
 
     <div class="card">
@@ -305,7 +317,28 @@ a { color: var(--accent); }
       <p class="takeaway">Quem concentrou mais na base ganhou mais votos de 2022 para 2026. A relação continua ao comparar
         apenas deputados do mesmo partido e do mesmo estado, e a chance de ser acaso é menor que 3%. Isso não prova que as
         emendas <em>causaram</em> os votos. Deputados com uma base fiel podem tanto mandar mais dinheiro para ela quanto
-        crescer por outros motivos. Também faltam os gastos de campanha de 2026, ainda não publicados.</p>
+        crescer por outros motivos.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>Ou é o dinheiro de campanha?</h3><span class="verdict v-info">Pesa à parte</span></header>
+      <p><span class="label">Hipótese</span><br>Quem concentra emendas na base também teria mais dinheiro de campanha, e
+        seria o dinheiro, não as emendas, que traz os votos.</p>
+      <p><span class="label">O que olhamos</span><br>As receitas que cada candidatura declarou ao TSE em 2026. Mais de 90%
+        vêm do fundo eleitoral, que o partido distribui. O teto para deputado federal é cerca de R$ 3,6 milhões.</p>
+      <div class="chart" aria-label="Taxa de reeleição por receitas de campanha">
+        <div class="chart-title">Taxa de reeleição, por receitas de campanha em 2026</div>
+        <div data-bars='{"max":100,"rows":[
+          {"label":"Terço com menos receitas (mediana R$ 1,9 mi)","bars":[[62,"s1","62%"]]},
+          {"label":"Terço do meio (R$ 2,7 mi)","bars":[[74,"s1","74%"]]},
+          {"label":"Terço com mais receitas (R$ 3,1 mi)","bars":[[80,"s1","80%"]]}]}'></div>
+      </div>
+      <p class="small">As taxas coincidem, por acaso, com as do gráfico anterior. Os grupos são outros: quem tem mais
+        dinheiro não é quem mais concentra emendas na base.</p>
+      <p class="takeaway">O dinheiro de campanha é o fator mais ligado à reeleição: cada R$ 1 milhão a mais de receita vem
+        com cerca de 11 pontos a mais de chance. Mas ele não anda junto com a concentração na base, e levá-lo em conta não
+        muda a relação entre base e votos. Ressalva: as receitas são as declaradas até agora, e a prestação de contas final
+        vence 30 dias depois da eleição.</p>
     </article>
 
     <article class="card">
@@ -337,7 +370,8 @@ a { color: var(--accent); }
     <div class="card">
       <span class="label">Conclusão da parte 2</span>
       <p>O <strong>quanto</strong> cada deputado destina é quase igual por lei e não explica quem se reelegeu. O que se
-        associa a mais votos é o <strong>onde</strong>: concentrar as emendas na própria base. O próximo passo é olhar
+        associa a mais votos é o <strong>onde</strong>: concentrar as emendas na própria base, mesmo levando em conta o
+        dinheiro de campanha. O próximo passo é olhar
         município por município, comparando o mesmo deputado em lugares que receberam mais e menos dinheiro. Essa
         comparação isola melhor o efeito das emendas.</p>
     </div>

@@ -17,6 +17,7 @@ FIGURAS = {
     "benford_simulacao.png": ("03_comparacao_2022.ipynb", "A.simular_digitos(df, REF"),
     "secoes_extremas.png": ("03_comparacao_2022.ipynb", 'S[["a favor", "contra"]].plot.barh'),
     "secoes_jovens.png": ("03_comparacao_2022.ipynb", "Seções com eleitorado mais jovem que o prédio"),
+    "modelo_urna.png": ("02_auditoria_adversarial.ipynb", "ARQ_MODELO = A.PROCESSED"),
     "emendas_por_mes.png": ("04_emendas_reeleicao.ipynb", "Pagamentos de emendas por mês"),
     "emendas_base_reeleicao.png": ("04_emendas_reeleicao.ipynb", "concentração das emendas na base eleitoral (terços)"),
 }
