@@ -21,7 +21,7 @@ FIGURES = ROOT / "reports" / "figures"
 
 CKAN = "https://dadosabertos.tse.jus.br/api/3/action"
 # Pacote(s) do portal de dados abertos com os Boletins de Urna (BU) em CSV.
-CKAN_QUERY_BU = f"boletim de urna {ANO}"
+CKAN_PACOTE_BU = f"resultados-{ANO}-boletim-de-urna"
 
 UFS = [
     "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA",

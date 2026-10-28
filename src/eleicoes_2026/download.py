@@ -24,10 +24,11 @@ from pathlib import Path
 import requests
 from tqdm import tqdm
 
-from .config import ANO, CKAN, CKAN_QUERY_BU, RAW, UFS
+from .config import ANO, CKAN, CKAN_PACOTE_BU, RAW, UFS
 
 # ex.: .../buweb/bweb_1t_AC_051020261403.zip
-RE_BWEB = re.compile(r"/bweb_(?P<turno>[12])t_(?P<uf>[A-Z]{2})_(?P<ts>\d{12})\.zip$")
+# aceita também o link do .sha512: no 2º turno de 2026 o recurso "Boletim de Urna" de RR aponta para o hash, não para o zip
+RE_BWEB = re.compile(r"/bweb_(?P<turno>[12])t_(?P<uf>[A-Z]{2})_(?P<ts>\d{12})\.zip(\.sha512)?$")
 
 session = requests.Session()
 session.headers["User-Agent"] = "eleicoes-2026-analise/0.1 (pesquisa acadêmica)"
@@ -52,20 +53,19 @@ class Recurso:
 
 def listar_recursos() -> dict[tuple[int, str], Recurso]:
     """Retorna o arquivo de BU mais recente para cada (turno, UF)."""
-    r = session.get(f"{CKAN}/package_search", params={"q": CKAN_QUERY_BU, "rows": 100}, timeout=60)
+    # package_show, e não package_search: o índice de busca do portal fica dias desatualizado (em 28/10/2026 ainda
+    # não mostrava o 2º turno, publicado em 26/10)
+    r = session.get(f"{CKAN}/package_show", params={"id": CKAN_PACOTE_BU}, timeout=60)
     r.raise_for_status()
     melhores: dict[tuple[int, str], Recurso] = {}
-    for pkg in r.json()["result"]["results"]:
-        if pkg["name"] != f"resultados-{ANO}-boletim-de-urna":
+    for res in r.json()["result"]["resources"]:
+        m = RE_BWEB.search(res["url"])
+        if not m:
             continue
-        for res in pkg["resources"]:
-            m = RE_BWEB.search(res["url"])
-            if not m:
-                continue
-            rec = Recurso(int(m["turno"]), m["uf"], m["ts"], res["url"])
-            chave = (rec.turno, rec.uf)
-            if chave not in melhores or rec.ordem > melhores[chave].ordem:
-                melhores[chave] = rec
+        rec = Recurso(int(m["turno"]), m["uf"], m["ts"], res["url"].removesuffix(".sha512"))
+        chave = (rec.turno, rec.uf)
+        if chave not in melhores or rec.ordem > melhores[chave].ordem:
+            melhores[chave] = rec
     return melhores
 
 
