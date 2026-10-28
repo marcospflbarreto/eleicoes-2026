@@ -7,7 +7,7 @@ converte para Parquet e gera notebooks com gráficos e testes de anomalia:
 |---|---|
 | `notebooks/01_analise_neutra.ipynb` | **Neutra**: descreve o resultado e aplica testes forenses de forma simétrica a todos os candidatos, sempre comparando com o que o acaso produziria. |
 | `notebooks/02_auditoria_adversarial.ipynb` | **Advogado do diabo**: procura qualquer brecha que pudesse sustentar um pedido de anulação de urnas ou da eleição. Cada achado passa por *hipótese → teste ingênuo → controle → materialidade* (anular todas as seções sinalizadas reverteria a margem?). No fim calcula a "menor brecha": quantas seções precisariam ser anuladas para inverter o resultado e quantas delas têm alguma anomalia técnica. |
-| `notebooks/03_comparacao_2022.ipynb` | **Referência**: os mesmos testes aplicados à eleição de 2022, uma simulação de Benford sem fraude e o perfil do eleitorado (idade, escolaridade) das seções que destoam do próprio local de votação. Mostra o que é normal numa eleição brasileira. |
+| `notebooks/03_comparacao_2022.ipynb` | **Referência**: os mesmos testes aplicados à eleição de 2022, uma simulação de Benford sem fraude e o perfil do eleitorado (idade, escolaridade) das seções que destoam do próprio local de votação. Mostra o que é normal numa eleição brasileira. Também confere argumentos que circularam depois do 2º turno. |
 | `notebooks/04_emendas_reeleicao.ipynb` | **Emendas parlamentares**: quanto, de que tipo, quando e para onde foram as emendas de 2023–2026, e se os deputados eleitos em 2022 que destinaram mais emendas, ou as concentraram na própria base, se reelegeram mais em 2026. |
 
 ## Destaques
@@ -27,6 +27,13 @@ saldo de 997 mil votos (22,5% da diferença). Quase tudo vem das 16.142 seções
 outra seção pequena: são as mesmas nos dois turnos e votam mais em Lula nos dois. Sem elas, o que sobra vale 3,8% da
 diferença. As 446 seções que o modelo entre turnos aponta como "fora da previsão" votaram quase igual nos dois turnos
 (90% mudaram menos de 5 pontos): quem erra é o modelo, que se apoia na média do município.
+
+**Os argumentos que circularam depois do 2º turno têm os números certos e a leitura errada.** As 3.042 seções em que
+Flávio fez até 10 votos são pequenas, rurais, no Nordeste e na Amazônia, e já votavam assim no 1º turno; em 2022 eram
+4.118. "Lula cresceu em todos os estados" mede a fatia entre os dois finalistas, que soma 100%: em 2022 foi Bolsonaro
+quem cresceu nos 28. No Rio, Flávio ficou parado porque cerca de 5% dos eleitores dele não voltaram a votar, não porque
+Lula levou 70% da direita (a estimativa fica entre um terço e metade). Detalhes no
+[relatório](https://marcospflbarreto.github.io/eleicoes-2026/#perguntas) e na seção 5 do notebook 03.
 
 **O teste de Benford "reprova" até uma eleição sem fraude.** O 2º dígito dos votos foge da Lei de Benford em 26 das 28
 UFs no 1º turno de 2026 e em 25 no 2º. Mas uma eleição simulada, limpa por construção e com os mesmos tamanhos de seção, reprova o mesmo número. O teste

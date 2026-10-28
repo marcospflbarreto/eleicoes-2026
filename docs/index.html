@@ -303,6 +303,85 @@ a { color: var(--accent); }
         mudaria.</p>
     </article>
 
+    <div class="stack" id="perguntas">
+      <span class="eyebrow">Perguntas que circularam depois do 2º turno</span>
+      <p>Argumentos comuns em grupos de mensagem. Em todos, o número citado confere com os boletins; a pergunta é o que
+        ele mostra quando comparado com o 1º turno e com 2022.</p>
+    </div>
+
+    <article class="card">
+      <header><h3>"Em 3.042 seções Flávio fez no máximo 10 votos"</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">Hipótese</span><br>Seções em que um candidato quase não tem votos seriam sinal de manipulação.</p>
+      <p><span class="label">O que olhamos</span><br>A conta está certa: são 3.042 seções, com 395 mil votos para Lula. São
+        seções pequenas (metade do tamanho típico) e rurais; três em cada quatro ficam no Maranhão, Bahia, Piauí, Pará,
+        Amazonas e Ceará.
+        No 1º turno, essas mesmas seções já davam 93% dos votos a Lula, e em 2.454 delas Flávio já tinha até 10 votos.</p>
+      <div class="chart" aria-label="Seções em que o adversário de Lula fez no máximo 10 votos">
+        <div class="chart-title">Seções em que o adversário de Lula fez no máximo 10 votos</div>
+        <div data-bars='{"max":6000,"rows":[
+          {"label":"2022, 1º turno","bars":[[5406,"s0","5.406"]]},
+          {"label":"2022, 2º turno","bars":[[4118,"s0","4.118"]]},
+          {"label":"2026, 1º turno","bars":[[2937,"s1","2.937"]]},
+          {"label":"2026, 2º turno","bars":[[3042,"s1","3.042"]]}]}'></div>
+      </div>
+      <p class="takeaway">É o mapa do voto rural do Nordeste e da Amazônia, menor hoje que em 2022. O contrário também existe:
+        em 227 seções, sobretudo no RS, Lula fez até 10 votos. Anular as 3.042 tiraria cerca de 380 mil votos de uma
+        diferença de 4,4 milhões.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>"Lula cresceu em todos os estados, Flávio em nenhum"</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">Hipótese</span><br>Um crescimento em todos os estados ao mesmo tempo, sem nenhuma exceção, seria
+        estranho.</p>
+      <p><span class="label">O que olhamos</span><br>Os painéis de apuração medem a fatia de Lula <strong>entre os dois
+        finalistas</strong>. As duas fatias somam 100%: se uma sobe num estado, a outra cai nele. "Flávio não cresceu em
+        nenhum estado" é o mesmo dado lido do outro lado. Refizemos a conta para 2022.</p>
+      <div class="chart" aria-label="Estados em que cada candidato ganhou terreno entre os turnos">
+        <div class="chart-title">Estados (de 28) em que a fatia entre os finalistas subiu do 1º para o 2º turno</div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Lula</span><span><i class="sw" style="background:var(--accent-2)"></i>adversário</span></div>
+        <div data-bars='{"max":28,"rows":[
+          {"label":"2022 (Bolsonaro)","bars":[[0,"s1","0"],[28,"s2","28"]]},
+          {"label":"2026 (Flávio)","bars":[[28,"s1","28"],[0,"s2","0"]]}]}'></div>
+      </div>
+      <p class="takeaway">Em 2022 aconteceu o espelho: Bolsonaro ganhou terreno nos 28 estados. Entre os turnos, o país inteiro
+        costuma andar na mesma direção, porque a mudança de voto é nacional. Em 2026 Lula subiu de 1,2 a 4,3 pontos,
+        menos onde já tinha 70% ou mais (Piauí, Bahia).</p>
+    </article>
+
+    <article class="card">
+      <header><h3>"No Rio, Lula ficou com 81% dos votos acrescidos"</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">Hipótese</span><br>No Rio, Flávio ficou quase parado (53,0% para 53,1%) e Lula foi de 39,4% para
+        46,9%. Para isso, Lula teria de ter ficado com uns 70% dos eleitores dos candidatos de direita.</p>
+      <p><span class="label">O que olhamos</span><br>Os números conferem, mas a conta supõe que todo eleitor de Flávio no 1º
+        turno votou nele de novo. Comparando as 37.630 seções do Rio, dá para estimar para onde foi cada grupo. É uma
+        estimativa aproximada, feita com seções e não com pessoas.</p>
+      <div class="chart" aria-label="Estimativa de para onde foram os eleitores de cada candidato no Rio">
+        <div class="chart-title">Rio, 2026: quanto de cada grupo do 1º turno foi para Lula no 2º (estimativa)</div>
+        <div data-bars='{"max":100,"unit":"%","rows":[
+          {"label":"Augusto Cury","bars":[[49,"s1","49%"]]},
+          {"label":"Ronaldo Caiado","bars":[[40,"s1","40%"]]},
+          {"label":"Renan Santos","bars":[[32,"s1","32%"]]},
+          {"label":"Branco ou nulo","bars":[[59,"s1","59%"]]}]}'></div>
+      </div>
+      <p>E cerca de 5% dos eleitores de Flávio no 1º turno não voltaram para votar. Isso aparece direto nos boletins: o
+        comparecimento subiu 2,7 pontos nas seções mais lulistas e 0,8 nas mais bolsonaristas. Lula cresceu em todo tipo de
+        seção, até nas mais favoráveis a Flávio.</p>
+      <p class="takeaway">Lula ficou com um terço a metade dos eleitores da direita, não 70%; Flávio parou porque parte do
+        eleitorado dele faltou. Em 2022, no mesmo Rio, foi Bolsonaro quem mais cresceu no 2º turno.</p>
+    </article>
+
+    <article class="card">
+      <header><h3>"Com voto em papel Lula perdia, com urna eletrônica é imbatível"</h3><span class="verdict v-ok">Não confere</span></header>
+      <p><span class="label">Hipótese</span><br>Lula perdeu em 1989, 1994 e 1998, e só passou a ganhar quando o voto ficou 100%
+        eletrônico, em 2002.</p>
+      <p><span class="label">O que olhamos</span><br>2002 foi de fato a primeira eleição geral toda em urna eletrônica. Mas em
+        1998 a maior parte do eleitorado (57% a 75%, conforme a publicação do TSE) já votou nela, e Lula perdeu no 1º turno.
+        Em 2018, com urna eletrônica, o PT perdeu e Bolsonaro foi eleito. Em 1982 Lula disputou o governo de São Paulo, não a
+        Presidência.</p>
+      <p class="takeaway">E em 2026, nas mesmas urnas, três semanas antes do 2º turno, Flávio ficou 2,2 milhões de votos à
+        frente de Lula.</p>
+    </article>
+
     <div class="card">
       <span class="label">Conclusão da parte 1</span>
       <p>Em nenhum dos dois turnos um teste encontrou algo capaz de mudar o resultado. Os padrões que chamam atenção,
