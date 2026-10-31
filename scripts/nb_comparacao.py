@@ -308,6 +308,114 @@ adversário manteve o próprio saldo porque cerca de 5% dos eleitores dele no 1�
 comparecimento subiu bem mais nas seções lulistas do que nas dele. Lula cresceu em todas as faixas, até nas mais favoráveis
 ao adversário. Em 2022, no mesmo estado, foi o adversário quem mais cresceu no 2º turno.
 
+### 5d. "Os votos depois das 17h decidiram a eleição"
+No 2º turno de 2026 a votação foi estendida até as 19h nas seções ainda abertas. O BU não diz quantos votos entraram depois
+das 17h, mas diz quando cada urna encerrou (horário de Brasília). Contamos as seções que encerraram tarde, somamos **todos**
+os votos delas (um limite superior) e comparamos com as vizinhas do mesmo município, inclusive no 1º turno.
+"""),
+("code", r"""
+def hora(col):
+    t = pd.to_datetime(col)
+    return t.dt.hour + t.dt.minute / 60
+
+if "2026 2º turno" in E:
+    t1, t2 = E["2026 1º turno"], E["2026 2º turno"]
+    t1, t2 = t1[t1["uf"] != "ZZ"], t2[t2["uf"] != "ZZ"]
+    adv = adversario(t2)
+    m = t2.assign(h2=hora(t2["dt_encerramento_bsb"]))[chave + [REF, adv, "votos_validos", "qt_aptos", "qt_comparecimento", "h2", "nm_municipio"]]
+    m = m.merge(t1.assign(h1=hora(t1["dt_encerramento_bsb"]))[chave + [REF, adv, "votos_validos", "qt_aptos", "qt_comparecimento", "h1"]],
+                on=chave, suffixes=("_2", "_1"))
+    for t in (1, 2):
+        tarde = m[f"h{t}"] > 17.25
+        print(f"{t}º turno: {int(tarde.sum()):,} seções encerraram depois das 17h15, com {int(m.loc[tarde, f'votos_validos_{t}'].sum()):,} "
+              f"votos válidos; saldo de {REF}: {int((m.loc[tarde, REF + f'_{t}'] - m.loc[tarde, adv + f'_{t}']).sum()):+,}")
+    m["tarde"] = (m["h2"] > 17.25).astype(float)
+    m["p1"] = m[REF + "_1"] / m["votos_validos_1"] * 100
+    m["p2"] = m[REF + "_2"] / m["votos_validos_2"] * 100
+    m["dp"] = m["p2"] - m["p1"]
+    m["dc"] = (m["qt_comparecimento_2"] / m["qt_aptos_2"] - m["qt_comparecimento_1"] / m["qt_aptos_1"]) * 100
+    for y, nome in (("p1", f"{REF} no 1º turno"), ("p2", f"{REF} no 2º turno"), ("dp", f"crescimento de {REF}"), ("dc", "variação do comparecimento")):
+        r = A.efeito_dentro_do_grupo(m[y], m["tarde"], m["cd_municipio"], m["votos_validos_2"])
+        print(f"   seções tardias vs. mesmo município, {nome}: {r['coef']:+.2f} p.p. (IC95% {r['ic95'][0]:+.2f} a {r['ic95'][1]:+.2f})")
+    print("   onde ficam:", m[m["tarde"] == 1].groupby(["uf", "nm_municipio"]).size().sort_values(ascending=False).head(5).to_dict())
+    sp = m[(m["uf"] == "SP") & (m["h2"] > 19)]
+    resto = m[m["cd_municipio"].isin(sp["cd_municipio"].unique()) & ~(m["h2"] > 19)]
+    pct = lambda d, t: d[f"{REF}_{t}"].sum() / d[f"votos_validos_{t}"].sum() * 100
+    print(f"SP, {len(sp):,} seções encerradas depois das 19h: {REF} {pct(sp, 1):.1f}% → {pct(sp, 2):.1f}%; "
+          f"resto dos mesmos municípios: {pct(resto, 1):.1f}% → {pct(resto, 2):.1f}%")
+"""),
+("md", r"""
+As seções que encerraram tarde são as das filas nas capitais. Comparadas com as vizinhas, o voto em Lula cresceu nelas até
+um pouco menos e o comparecimento quase não mudou: não há sinal de votos acrescentados no horário extra. Em São Paulo, as
+seções encerradas depois das 19h já eram mais lulistas no 1º turno e cresceram tanto quanto o resto da cidade.
+
+### 5e. "Milhões votaram sem biometria"
+O BU traz quantos eleitores foram liberados sem a digital (`qt_biom_sem_hab`). Se esse fosse o caminho de uma fraude, as
+seções com mais deles deveriam dar mais votos ao vencedor, ou fazê-lo crescer mais entre os turnos.
+"""),
+("code", r"""
+if "2026 2º turno" in E:
+    for nome in ("2026 1º turno", "2026 2º turno"):
+        d = E[nome]
+        print(f"{nome}: {int(d['qt_biom_sem_hab'].sum()):,} liberados sem biometria "
+              f"({d['qt_biom_sem_hab'].sum() / d['qt_comparecimento'].sum():.2%} do comparecimento)")
+    t1, t2 = E["2026 1º turno"], E["2026 2º turno"]
+    cols = [REF, "votos_validos", "qt_comparecimento", "qt_biom_sem_hab"]
+    b = t2.loc[t2["uf"] != "ZZ", chave + cols].merge(t1[chave + cols], on=chave, suffixes=("_2", "_1"))
+    b["sem_biom"] = b["qt_biom_sem_hab_2"] / b["qt_comparecimento_2"] * 100
+    b["p2"] = b[REF + "_2"] / b["votos_validos_2"] * 100
+    b["dp"] = b["p2"] - b[REF + "_1"] / b["votos_validos_1"] * 100
+    b["p2_vs_municipio"] = b["p2"] - b.groupby("cd_municipio")["p2"].transform("mean")
+    b["grupo"] = pd.qcut(b["sem_biom"].rank(method="first"), 5, labels=["1 (menos)", "2", "3", "4", "5 (mais)"])
+    display(b.groupby("grupo", observed=True).agg(**{"% sem digital": ("sem_biom", "mean"),
+                                                     f"{REF} vs. município (p.p.)": ("p2_vs_municipio", "mean"),
+                                                     f"crescimento de {REF} (p.p.)": ("dp", "mean")}).round(2))
+"""),
+("md", r"""
+O volume de eleitores sem digital foi o mesmo nos dois turnos, e as seções com mais deles não votaram mais em Lula que o
+resto do município. Lula cresceu até menos entre os turnos onde eles são mais comuns.
+
+### 5f. "Lula ganhou 10 milhões de votos em três semanas"
+Os votos que um finalista pode ganhar entre os turnos são os dos outros candidatos no 1º turno mais o aumento de votos
+válidos (mais comparecimento e menos brancos e nulos). Comparamos quanto disso cada finalista levou em 2022 e em 2026.
+"""),
+("code", r"""
+linhas = []
+for ano in ("2022", "2026"):
+    if f"{ano} 2º turno" not in E:
+        continue
+    t1, t2 = E[f"{ano} 1º turno"], E[f"{ano} 2º turno"]
+    adv = adversario(t2)
+    outros = t1["votos_validos"].sum() - t1[REF].sum() - t1[adv].sum()
+    em_jogo = outros + t2["votos_validos"].sum() - t1["votos_validos"].sum()
+    linhas.append({"eleição": ano, "votos dos outros candidatos no 1º": outros,
+                   "aumento de votos válidos": t2["votos_validos"].sum() - t1["votos_validos"].sum(), "em jogo": em_jogo,
+                   f"{REF} ganhou": t2[REF].sum() - t1[REF].sum(), "adversário ganhou": t2[adv].sum() - t1[adv].sum(),
+                   f"% de {REF}": (t2[REF].sum() - t1[REF].sum()) / em_jogo * 100})
+display(pd.DataFrame(linhas).set_index("eleição").style.format("{:,.0f}").format("{:.1f}", subset=[f"% de {REF}"]))
+"""),
+("md", r"""
+Em 2022 o adversário de Lula levou 70% do que estava em jogo entre os turnos; em 2026, Lula levou 74%. Uma fatia dessas,
+para um lado ou para o outro, não é impossível: é o que acontece quando um finalista atrai melhor quem ficou de fora.
+
+### 5g. Seções agregadas: geografia ou anomalia?
+As seções que recebem os eleitores de outra seção votam mais em Lula nos dois turnos. Comparamos com as vizinhas do mesmo
+município e do mesmo local de votação.
+"""),
+("code", r"""
+if "2026 2º turno" in E:
+    d = E["2026 2º turno"]
+    agregada = d["ds_secoes_agregadas"].notna() & (d["ds_secoes_agregadas"].astype(str).str.strip() != "")
+    p = d[REF] / d["votos_validos"] * 100
+    local = d["cd_municipio"].astype(str) + "-" + d["nr_zona"].astype(str) + "-" + d["nr_local_votacao"].astype(str)
+    print(f"{int(agregada.sum()):,} seções agregadas; {REF}: {p[agregada].mean():.1f}% vs. {p[~agregada].mean():.1f}% nas demais")
+    for grupo, nome in ((d["cd_municipio"], "mesmo município"), (local, "mesmo local de votação")):
+        r = A.efeito_dentro_do_grupo(p, agregada.astype(float), grupo, d["votos_validos"])
+        print(f"   comparadas com o {nome}: {r['coef']:+.2f} p.p. (IC95% {r['ic95'][0]:+.2f} a {r['ic95'][1]:+.2f})")
+    print("   região:", d.loc[agregada, "regiao"].value_counts(normalize=True).round(2).head(3).to_dict(),
+          "| todas:", d["regiao"].value_counts(normalize=True).round(2).head(3).to_dict())
+"""),
+("md", r"""
 ## 6. Resumo automático
 """),
 ("code", r"""

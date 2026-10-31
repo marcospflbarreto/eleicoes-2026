@@ -32,8 +32,12 @@ diferença. As 446 seções que o modelo entre turnos aponta como "fora da previ
 Flávio fez até 10 votos são pequenas, rurais, no Nordeste e na Amazônia, e já votavam assim no 1º turno; em 2022 eram
 4.118. "Lula cresceu em todos os estados" mede a fatia entre os dois finalistas, que soma 100%: em 2022 foi Bolsonaro
 quem cresceu nos 28. No Rio, Flávio ficou parado porque cerca de 5% dos eleitores dele não voltaram a votar, não porque
-Lula levou 70% da direita (a estimativa fica entre um terço e metade). Detalhes no
-[relatório](https://marcospflbarreto.github.io/eleicoes-2026/#perguntas) e na seção 5 do notebook 03.
+Lula levou 70% da direita. Os votos depois das 17h, na votação estendida, não mudariam nada: as 8.845 seções que
+encerraram depois das 17h15 somam, com todos os votos, um saldo de 279 mil para Lula, e cresceram para ele menos que as
+vizinhas. Os 8,6 milhões liberados sem biometria foram quase o mesmo número do 1º turno, e Lula cresceu menos onde eles
+são mais comuns. Os 10 milhões de votos a mais de Lula são 74% do que estava em jogo entre os turnos; em 2022, Bolsonaro
+levou 70%. Detalhes no [relatório](https://marcospflbarreto.github.io/eleicoes-2026/#perguntas), que também diz o que
+esta análise não consegue ver, e na seção 5 do notebook 03.
 
 **O teste de Benford "reprova" até uma eleição sem fraude.** O 2º dígito dos votos foge da Lei de Benford em 26 das 28
 UFs no 1º turno de 2026 e em 25 no 2º. Mas uma eleição simulada, limpa por construção e com os mesmos tamanhos de seção, reprova o mesmo número. O teste

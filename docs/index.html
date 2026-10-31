@@ -217,7 +217,7 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
     <p class="lede">Este projeto fez duas investigações com dados públicos. A primeira olhou os boletins de urna dos dois turnos
       de 2026, seção por seção, atrás de sinais de fraude. A segunda cruzou as emendas parlamentares com o resultado dos
       deputados federais. Aqui estão as hipóteses testadas, o que se encontrou e o que ainda não dá para afirmar.</p>
-    <p class="small">Atualizado em 28 de outubro de 2026, com os boletins dos dois turnos ·
+    <p class="small">Atualizado em 30 de outubro de 2026, com os boletins dos dois turnos ·
       <a href="https://github.com/marcospflbarreto/eleicoes-2026">código, dados e notebooks no GitHub</a></p>
   </div>
 
@@ -227,8 +227,10 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
       <ul>
         <li><strong>Urnas:</strong> nos dois turnos, nenhum teste encontrou algo capaz de mudar o resultado. Os padrões que
           chamam atenção já apareciam em 2022 e têm explicação no perfil do eleitorado.</li>
-        <li><strong>Argumentos que circularam:</strong> os números citados conferem com os boletins, mas cada padrão já
-          existia no 1º turno ou em 2022.</li>
+        <li><strong>Argumentos que circularam:</strong> testamos os mais compartilhados (votos depois das 17h, os 10
+          milhões de votos a mais de Lula, biometria, urnas com zero voto). Os números costumam estar certos; a conclusão,
+          não. Cada padrão aparece também no 1º turno, quando Flávio venceu, ou em 2022, quando o lado favorecido foi o
+          outro.</li>
         <li><strong>Emendas:</strong> quanto o deputado destina não explica a reeleição; concentrar as emendas na própria
           base se associa a mais votos.</li>
       </ul>
@@ -245,7 +247,8 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
         <li><strong>O veredito</strong>:
           <span class="verdict v-ok">Descartada</span> o dado não sustenta a suspeita;
           <span class="verdict v-info">Explicada</span> o padrão existe, mas tem causa conhecida;
-          <span class="verdict v-warn">Em aberto</span> falta dado ou o resultado é fraco.</li>
+          <span class="verdict v-warn">Em aberto</span> falta dado ou o resultado é fraco;
+          <span class="verdict v-ok">Não confere</span> o número citado pode até estar certo, mas não mostra o que se diz.</li>
       </ol>
     </div>
   </div>
@@ -256,9 +259,12 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
       <span class="eyebrow">Parte 1</span>
       <h2 id="p1">As urnas de 2026</h2>
       <p>O TSE publica um <strong>boletim de urna</strong> (BU) por seção eleitoral: quantos eleitores estavam aptos,
-        quantos votaram e quantos votos cada candidato teve. São quase 500 mil seções em cada turno. Todos os testes
-        rodaram nos dois turnos de 2026 e também na eleição de 2022, que serve de régua: um padrão só é estranho se
-        fugir do que 2022 já mostrava.</p>
+        quantos votaram e quantos votos cada candidato teve. São quase 500 mil seções em cada turno.</p>
+      <p>Um padrão estranho só é sinal de fraude se não aparecer onde não houve fraude que favorecesse o vencedor. Por
+        isso cada teste é comparado com três réguas: o <strong>1º turno de 2026</strong>, nas mesmas urnas, quando Flávio
+        ficou à frente; a <strong>eleição de 2022</strong>, quando o lado que ganhou terreno no 2º turno foi o outro; e,
+        quando dá, uma <strong>eleição simulada sem fraude</strong> ou a comparação com as outras seções do mesmo
+        prédio. Um padrão que se repete nas três não aponta para quem venceu em 2026.</p>
     </div>
 
     <span class="label">1º turno, 4 de outubro</span>
@@ -285,7 +291,7 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
       <p class="takeaway"><strong>Nenhuma seção</strong> com conta errada, nos dois turnos de 2026 e nos dois de 2022.</p>
     </article>
 
-    <article class="card">
+    <article class="card" id="a-lei-de-benford-acusa-fraude">
       <header><h3>A Lei de Benford acusa fraude?</h3><span class="verdict v-ok">Descartada</span></header>
       <p><span class="label">Hipótese</span><br>A Lei de Benford diz com que frequência cada algarismo aparece em números
         "naturais". Se os votos fugirem dela, teriam sido inventados.</p>
@@ -327,8 +333,8 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
       </div>
       <p class="takeaway">Seções com eleitorado bem mais jovem que o resto do prédio são 7% do total, mas 59% das extremas.
         Jovens votam diferente, e isso explica por que essas seções destoam. Sobram 41 seções extremas fora desse grupo,
-        28 com mais e 13 com menos votos em Lula. É um desequilíbrio pequeno, que pode ser acaso. Essas seções são
-        as candidatas a conferência manual (ata da mesa, BU impresso). Mesmo todas somadas, valem cerca de 0,3% da diferença
+        28 com mais e 13 com menos votos em Lula. O acaso produziria um desequilíbrio assim em só 3% das vezes, então ele
+        não está explicado. Essas seções são as candidatas a conferência manual (ata da mesa, BU impresso). Mesmo todas somadas, valem cerca de 0,3% da diferença
         entre os candidatos. No 2º turno a marca se repete: 57% das extremas são a última seção do prédio.</p>
     </article>
 
@@ -339,6 +345,9 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
       <p><span class="label">O que olhamos</span><br>No 1º turno há 538 seções assim. Comparando cada uma com as outras
         seções do mesmo município, Lula tem cerca de 5,6 pontos a mais nelas. No 2º turno são 620, com 7,3 pontos a mais.
         Repetimos para 2022: lá a diferença foi de 8,4 e 6,1 pontos.</p>
+      <p>Quem são essas seções: pequenas (metade do tamanho típico), 58% no Nordeste, e quase sempre as mesmas nos dois
+        turnos. As 620 do 2º turno já tinham comparecimento médio de 94% no 1º. Numa seção pequena, poucos faltosos a mais
+        ou a menos mudam muito a porcentagem.</p>
       <div class="chart" aria-label="Diferença do voto em Lula nas seções de comparecimento muito alto">
         <div class="chart-head"><strong class="chart-title">O efeito já existia em 2022, com tamanho parecido</strong><span class="chart-sub">Pontos a mais para Lula nas seções com comparecimento de 95% ou mais, comparadas com o resto do município</span></div>
         <div data-bars='{"max":10,"rows":[
@@ -347,14 +356,16 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
           {"label":"2026, 1º turno","bars":[[5.64,"s1","5,6"]]},
           {"label":"2026, 2º turno","bars":[[7.33,"s1","7,3"]]}]}'></div>
       </div>
-      <p class="takeaway">O padrão já existia em 2022, com a mesma direção e tamanho parecido. Não é algo novo desta eleição.
-        No 1º turno, anulá-las tiraria votos do 2º colocado. No 2º, tiraria do vencedor, mas só 0,85% da diferença.</p>
+      <p class="takeaway">São seções pequenas e estáveis, com comparecimento alto nos dois turnos, e o padrão existia em 2022
+        com o mesmo tamanho. No 1º turno, anulá-las tiraria votos do 2º colocado. No 2º, tiraria do vencedor, mas só 0,85%
+        da diferença.</p>
     </article>
 
     <article class="card">
       <header><h3>Outras suspeitas comuns</h3><span class="verdict v-ok">Descartadas</span></header>
       <p><span class="label">Biometria</span><br>Seções com mais gente votando sem a digital não votam diferente das outras
-        do mesmo município (efeito praticamente zero, em 2022 e nos dois turnos de 2026).</p>
+        do mesmo município (efeito praticamente zero, em 2022 e nos dois turnos de 2026). Detalhes na ficha
+        <a href="#votaram-sem-biometria">"8,6 milhões votaram sem biometria"</a>.</p>
       <p><span class="label">Horários e urnas</span><br>Em nenhum dos dois turnos uma urna abriu cedo demais, fechou antes
         das 17h ou emitiu o boletim antes do encerramento. Os poucos casos estranhos somam menos de 2 mil votos no 1º turno
         (7 urnas carregadas no próprio dia, 2 boletins emitidos mais de 2 horas depois) e cerca de 4 mil no 2º (5 e 10).</p>
@@ -403,6 +414,8 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
         <strong>seções agregadas</strong>, as que recebem os eleitores de outra seção pequena, unida a ela para a votação.
         Elas são as mesmas nos dois turnos e votam mais em Lula nos dois: 55% contra 45% das demais no 1º turno, 60%
         contra 52% no 2º. No 1º turno, eram elas que faziam o conjunto marcado pender para Lula, então o 2º colocado.</p>
+      <p>Por que votam mais em Lula? Por onde ficam: 47% estão no Nordeste, contra 28% de todas as seções. Comparadas só com
+        as outras seções do mesmo local de votação, a diferença cai de quase 9 pontos para 0,24 ponto.</p>
       <div class="chart" aria-label="Parte da diferença do 2º turno que as seções marcadas valem">
         <div class="chart-head"><strong class="chart-title">Sem as seções agregadas, as marcadas valem menos de 4% da diferença</strong><span class="chart-sub">Parte da diferença de 4,4 milhões de votos que se perderia anulando as seções marcadas</span></div>
         <div data-bars='{"max":100,"unit":"%","rows":[
@@ -415,16 +428,68 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
         mudaria.</p>
     </article>
 
-    <div class="stack toc-grupo" id="perguntas" data-toc="Perguntas que circularam">
-      <span class="eyebrow">Perguntas que circularam depois do 2º turno</span>
-      <p>Argumentos comuns em grupos de mensagem. Em todos, o número citado confere com os boletins; a pergunta é o que
-        ele mostra quando comparado com o 1º turno e com 2022.</p>
+    <div class="stack toc-grupo" id="perguntas" data-toc="Argumentos que circularam">
+      <span class="eyebrow">Os argumentos mais compartilhados depois do 2º turno</span>
+      <p>Reunimos as alegações que mais circularam nas redes, na carta de Flávio Bolsonaro e num "relatório pericial"
+        anônimo, a partir das checagens da <a href="https://www.agencialupa.org/eleicoes/2026/10/30/documento-falso-distorce-dados-do-tse-para-alegar-fraude-na-eleicao-presidencial-de-2026/">Lupa</a>,
+        do <a href="https://www.justicaeleitoral.jus.br/fato-ou-boato">Fato ou Boato do TSE</a> e da
+        <a href="https://www.aosfatos.org/noticias/video-nao-mostra-urna-registrando-votos-sozinha/">Aos Fatos</a>, e
+        testamos nos boletins as que dá para testar. Cada ficha diz o que se afirma, o que os dados mostram e o que
+        isso significa.</p>
     </div>
 
+    <article class="card" id="votos-depois-das-17h">
+      <header><h3 data-toc="Votos depois das 17h">"Os votos depois das 17h decidiram a eleição"</h3><span class="verdict v-ok">Não confere</span></header>
+      <p><span class="label">O que se diz</span><br>O ministro Cristiano Zanin, do STF, estendeu a votação até as 19h nas
+        seções que ainda estavam abertas. Pelas postagens, os votos dessas horas teriam virado o resultado: seriam "1,8 a
+        2,5 milhões de votos irregulares", e em São Paulo 1.571 seções que passaram das 19h teriam dado 57% a Lula.</p>
+      <p><span class="label">O que os dados mostram</span><br>O boletim não diz quantos votos entraram depois das 17h, mas
+        diz a que horas cada urna encerrou. Só 8.845 seções (1,8%) encerraram depois das 17h15; no 1º turno, com cédula
+        maior e filas mais longas, foram 124.594. Somando todos os votos dessas seções, e não só os do horário
+        extra, o saldo de Lula nelas é de 279 mil. Segundo o TSE, os votos depois das 17h foram 34.393 no país.</p>
+      <div class="chart" aria-label="Votos ligados ao horário estendido comparados com a diferença entre os candidatos">
+        <div class="chart-head"><strong class="chart-title">Mesmo apagando as seções inteiras, a diferença continua</strong><span class="chart-sub">Milhões de votos</span></div>
+        <div data-bars='{"max":4.5,"rows":[
+          {"label":"Diferença de Lula no país","bars":[[4.43,"s0","4,43"]]},
+          {"label":"Saldo de Lula nas seções que encerraram depois das 17h15 (todos os votos)","bars":[[0.28,"s1","0,28"]]},
+          {"label":"Votos registrados depois das 17h, segundo o TSE","bars":[[0.034,"s1","0,03"]]}]}'></div>
+      </div>
+      <p>São Paulo: 1.052 seções encerraram depois das 19h, quase todas na capital, com 58% para Lula. Mas no 1º turno elas
+        já davam a ele 4,7 pontos a mais que o resto dos mesmos municípios, e do 1º para o 2º turno as duas partes cresceram
+        igual, 8,7 e 8,8 pontos. São bairros mais lulistas, não votos novos.</p>
+      <p class="takeaway">As seções que encerraram tarde são as das filas nas capitais: Rio, São Paulo, Salvador. Comparadas
+        com as vizinhas do mesmo município, Lula cresceu nelas até um pouco menos, e o comparecimento subiu só 0,2 ponto a
+        mais. Não há sinal de votos acrescentados no horário extra. Se a decisão de estender foi correta é uma questão
+        jurídica; aqui olhamos só se ela poderia ter mudado o resultado.</p>
+    </article>
+
+    <article class="card" id="dez-milhoes">
+      <header><h3 data-toc="10 milhões de votos a mais">"Lula ganhou 10 milhões de votos em três semanas: é impossível"</h3><span class="verdict v-ok">Não confere</span></header>
+      <p><span class="label">O que se diz</span><br>Na carta em que contesta o resultado, Flávio Bolsonaro chama de
+        "impossibilidade matemática" Lula ter somado mais de 10 milhões de votos entre os turnos.</p>
+      <p><span class="label">O que os dados mostram</span><br>O número está certo: Lula foi de 53,9 para 64,3 milhões
+        (+10,4 milhões), e Flávio de 56,1 para 59,8 milhões (+3,7 milhões). De onde vieram: os outros candidatos tinham
+        9,3 milhões de votos no 1º turno; 3 milhões de pessoas a mais foram votar; e 1,8 milhão a menos votou branco ou
+        nulo. São 14,1 milhões de votos válidos que não eram de nenhum dos dois finalistas. Lula ficou com 74% deles.</p>
+      <div class="chart" aria-label="Parte dos votos novos ou liberados que cada finalista conquistou">
+        <div class="chart-head"><strong class="chart-title">Em 2022, foi Bolsonaro quem levou a maior parte</strong><span class="chart-sub">Parte dos votos válidos novos ou liberados entre os turnos que cada finalista conquistou</span></div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Lula</span><span><i class="sw" style="background:var(--accent-2)"></i>adversário</span></div>
+        <div data-bars='{"max":100,"unit":"%","rows":[
+          {"label":"2022 (10,2 milhões em jogo)","bars":[[30,"s1","30%"],[70,"s2","70%"]]},
+          {"label":"2026 (14,1 milhões em jogo)","bars":[[74,"s1","74%"],[26,"s2","26%"]]}]}'></div>
+      </div>
+      <p class="takeaway">Em 2022, Bolsonaro somou 7,1 milhões de votos entre os turnos, 70% do que estava em jogo. Ninguém
+        chamou aquilo de impossível. Uma fatia dessas, para um lado ou para o outro, é o que acontece quando um candidato
+        atrai melhor os eleitores de quem ficou de fora.</p>
+    </article>
+
     <article class="card">
-      <header><h3 data-toc="3.042 seções com até 10 votos">"Em 3.042 seções Flávio fez no máximo 10 votos"</h3><span class="verdict v-info">Explicada</span></header>
-      <p><span class="label">Hipótese</span><br>Seções em que um candidato quase não tem votos seriam sinal de manipulação.</p>
-      <p><span class="label">O que olhamos</span><br>A conta está certa: são 3.042 seções, com 395 mil votos para Lula. São
+      <header><h3 data-toc="Urnas com zero ou quase zero voto">"Flávio teve zero voto em 106 urnas" e "até 10 votos em 3.042"</h3><span class="verdict v-info">Explicada</span></header>
+      <p><span class="label">O que se diz</span><br>Seções em que um candidato quase não tem votos seriam sinal de
+        manipulação. O levantamento mais citado aponta 106 urnas com zero voto para Flávio, que deram 14.860 a Lula.</p>
+      <p><span class="label">O que os dados mostram</span><br>As contas estão certas. Com zero voto, são 106 seções para
+        Flávio e 4 para Lula; no 2º turno de 2022 foram 144 para Bolsonaro e 5 para Lula. Com até 10 votos para Flávio,
+        são 3.042 seções, com 395 mil votos para Lula. São
         seções pequenas (metade do tamanho típico) e rurais; três em cada quatro ficam no Maranhão, Bahia, Piauí, Pará,
         Amazonas e Ceará.
         No 1º turno, essas mesmas seções já davam 93% dos votos a Lula, e em 2.454 delas Flávio já tinha até 10 votos.</p>
@@ -436,16 +501,17 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
           {"label":"2026, 1º turno","bars":[[2937,"s1","2.937"]]},
           {"label":"2026, 2º turno","bars":[[3042,"s1","3.042"]]}]}'></div>
       </div>
-      <p class="takeaway">É o mapa do voto rural do Nordeste e da Amazônia, menor hoje que em 2022. O contrário também existe:
-        em 227 seções, sobretudo no RS, Lula fez até 10 votos. Anular as 3.042 tiraria cerca de 380 mil votos de uma
+      <p class="takeaway">É o mapa do voto rural do Nordeste e da Amazônia, incluindo aldeias indígenas e comunidades
+        quilombolas, onde o TSE lembra que o voto costuma se concentrar. E é menor hoje que em 2022. O contrário também
+        existe: em 227 seções, sobretudo no RS, Lula fez até 10 votos. Anular as 3.042 tiraria cerca de 380 mil votos de uma
         diferença de 4,4 milhões.</p>
     </article>
 
     <article class="card">
       <header><h3 data-toc="Lula cresceu em todos os estados">"Lula cresceu em todos os estados, Flávio em nenhum"</h3><span class="verdict v-info">Explicada</span></header>
-      <p><span class="label">Hipótese</span><br>Um crescimento em todos os estados ao mesmo tempo, sem nenhuma exceção, seria
-        estranho.</p>
-      <p><span class="label">O que olhamos</span><br>Os painéis de apuração medem a fatia de Lula <strong>entre os dois
+      <p><span class="label">O que se diz</span><br>Um crescimento em todos os estados ao mesmo tempo, sem nenhuma exceção,
+        seria estranho. Também circulou que Lula virou 211 municípios em que Flávio liderou o 1º turno, e Flávio só 1.</p>
+      <p><span class="label">O que os dados mostram</span><br>Os painéis de apuração medem a fatia de Lula <strong>entre os dois
         finalistas</strong>. As duas fatias somam 100%: se uma sobe num estado, a outra cai nele. "Flávio não cresceu em
         nenhum estado" é o mesmo dado lido do outro lado. Refizemos a conta para 2022.</p>
       <div class="chart" aria-label="Estados em que cada candidato ganhou terreno entre os turnos">
@@ -456,37 +522,39 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
           {"label":"2026 (Flávio)","bars":[[28,"s1","28"],[0,"s2","0"]]}]}'></div>
       </div>
       <p class="takeaway">Em 2022 aconteceu o espelho: Bolsonaro ganhou terreno nos 28 estados. Entre os turnos, o país inteiro
-        costuma andar na mesma direção, porque a mudança de voto é nacional. Em 2026 Lula subiu de 1,2 a 4,3 pontos,
-        menos onde já tinha 70% ou mais (Piauí, Bahia).</p>
+        costuma andar na mesma direção, porque a mudança de voto é nacional; quando todo lugar se move para o mesmo lado,
+        as viradas de município também vão quase todas para esse lado. Em 2026 Lula subiu de 1,2 a 4,3 pontos, menos onde
+        já tinha 70% ou mais (Piauí, Bahia).</p>
     </article>
 
     <article class="card">
       <header><h3 data-toc="Rio: 81% dos votos acrescidos">"No Rio, Lula ficou com 81% dos votos acrescidos"</h3><span class="verdict v-info">Explicada</span></header>
-      <p><span class="label">Hipótese</span><br>No Rio, Flávio ficou quase parado (53,0% para 53,1%) e Lula foi de 39,4% para
-        46,9%. Para isso, Lula teria de ter ficado com uns 70% dos eleitores dos candidatos de direita.</p>
-      <p><span class="label">O que olhamos</span><br>Os números conferem, mas a conta supõe que todo eleitor de Flávio no 1º
-        turno votou nele de novo. Comparando as 37.630 seções do Rio, dá para estimar para onde foi cada grupo. É uma
-        estimativa aproximada, feita com seções e não com pessoas.</p>
+      <p><span class="label">O que se diz</span><br>No Rio, Flávio ficou quase parado (53,0% para 53,1%) e Lula foi de 39,4%
+        para 46,9%. Para isso, Lula teria de ter ficado com uns 70% dos eleitores dos candidatos de direita.</p>
+      <p><span class="label">O que os dados mostram</span><br>Os números conferem, mas a conta supõe que todo eleitor de
+        Flávio no 1º turno votou nele de novo. O boletim mostra outra coisa: o comparecimento subiu 2,7 pontos nas seções
+        mais lulistas do Rio e só 0,8 nas mais bolsonaristas. Parte do eleitorado de Flávio não voltou para votar, e por
+        isso a fatia dele quase não se moveu. Lula cresceu em todo tipo de seção, até nas mais
+        favoráveis a Flávio.</p>
       <div class="chart" aria-label="Estimativa de para onde foram os eleitores de cada candidato no Rio">
-        <div class="chart-head"><strong class="chart-title">Lula levou de um terço a metade dos eleitores da direita, não 70%</strong><span class="chart-sub">Rio, 2026: parte de cada grupo do 1º turno que votou em Lula no 2º (estimativa)</span></div>
+        <div class="chart-head"><strong class="chart-title">Pela estimativa, Lula levou de um terço a metade dos eleitores da direita</strong><span class="chart-sub">Rio, 2026: parte de cada grupo do 1º turno que votou em Lula no 2º (estimativa por seção)</span></div>
         <div data-bars='{"max":100,"unit":"%","rows":[
           {"label":"Augusto Cury","bars":[[49,"s1","49%"]]},
           {"label":"Ronaldo Caiado","bars":[[40,"s1","40%"]]},
-          {"label":"Renan Santos","bars":[[32,"s1","32%"]]},
-          {"label":"Branco ou nulo","bars":[[59,"s1","59%"]]}]}'></div>
+          {"label":"Renan Santos","bars":[[32,"s1","32%"]]}]}'></div>
       </div>
-      <p>E cerca de 5% dos eleitores de Flávio no 1º turno não voltaram para votar. Isso aparece direto nos boletins: o
-        comparecimento subiu 2,7 pontos nas seções mais lulistas e 0,8 nas mais bolsonaristas. Lula cresceu em todo tipo de
-        seção, até nas mais favoráveis a Flávio.</p>
-      <p class="takeaway">Lula ficou com um terço a metade dos eleitores da direita, não 70%; Flávio parou porque parte do
-        eleitorado dele faltou. Em 2022, no mesmo Rio, foi Bolsonaro quem mais cresceu no 2º turno.</p>
+      <p class="small">Essa estimativa compara seções, não pessoas, e é instável: o mesmo cálculo diz que mais da metade de
+        quem votou branco ou nulo no 1º turno escolheu Lula, e para 2022 dava zero. Vale como ordem de grandeza. O dado
+        do comparecimento, acima, não depende de modelo.</p>
+      <p class="takeaway">A conta dos 70% supõe que Flávio não perdeu nenhum eleitor. Ele perdeu: parte não voltou a votar.
+        Em 2022, no mesmo Rio, foi Bolsonaro quem mais cresceu no 2º turno.</p>
     </article>
 
     <article class="card">
       <header><h3 data-toc="Papel × urna eletrônica">"Com voto em papel Lula perdia, com urna eletrônica é imbatível"</h3><span class="verdict v-ok">Não confere</span></header>
-      <p><span class="label">Hipótese</span><br>Lula perdeu em 1989, 1994 e 1998, e só passou a ganhar quando o voto ficou 100%
-        eletrônico, em 2002.</p>
-      <p><span class="label">O que olhamos</span><br>2002 foi de fato a primeira eleição geral toda em urna eletrônica. Mas em
+      <p><span class="label">O que se diz</span><br>Lula perdeu em 1989, 1994 e 1998, e só passou a ganhar quando o voto
+        ficou 100% eletrônico, em 2002.</p>
+      <p><span class="label">O que os dados mostram</span><br>2002 foi de fato a primeira eleição geral toda em urna eletrônica. Mas em
         1998 a maior parte do eleitorado (57% a 75%, conforme a publicação do TSE) já votou nela, e Lula perdeu no 1º turno.
         Em 2018, com urna eletrônica, o PT perdeu e Bolsonaro foi eleito. Em 1982 Lula disputou o governo de São Paulo, não a
         Presidência.</p>
@@ -494,11 +562,65 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
         frente de Lula.</p>
     </article>
 
+    <article class="card" id="votaram-sem-biometria">
+      <header><h3 data-toc="Votos sem biometria">"8,6 milhões votaram sem biometria, o dobro da diferença"</h3><span class="verdict v-ok">Não confere</span></header>
+      <p><span class="label">O que se diz</span><br>O "relatório pericial" chama de maior vulnerabilidade da eleição os
+        eleitores liberados sem a digital, depois de digitar o ano de nascimento. Seriam votos sem controle, em número
+        maior que a vantagem de Lula.</p>
+      <p><span class="label">O que os dados mostram</span><br>O número está certo: 8,6 milhões no 2º turno, 6,7% de quem
+        votou. Mas no 1º turno, quando Flávio ficou à frente, foram 8,3 milhões: quase o mesmo. E as seções com mais
+        eleitores sem digital não votaram mais em Lula que as vizinhas do mesmo município. Lula cresceu até menos entre os
+        turnos onde há mais deles. Para votar sem a digital, o eleitor mostra documento com foto, o mesário confere o ano
+        de nascimento no cadastro e a liberação fica registrada no log da urna.</p>
+      <div class="chart" aria-label="Crescimento de Lula entre os turnos por fatia de eleitores sem digital">
+        <div class="chart-head"><strong class="chart-title">Lula cresceu menos onde mais gente votou sem a digital</strong><span class="chart-sub">Crescimento de Lula do 1º para o 2º turno, em pontos, nas seções divididas em cinco grupos pela fatia de eleitores liberados sem digital</span></div>
+        <div data-bars='{"max":8,"rows":[
+          {"label":"Menos sem digital (2,8% em média)","bars":[[6.85,"s1","6,9"]]},
+          {"label":"4,6%","bars":[[6.78,"s1","6,8"]]},
+          {"label":"6,2%","bars":[[6.55,"s1","6,6"]]},
+          {"label":"8,1%","bars":[[6.26,"s1","6,3"]]},
+          {"label":"Mais sem digital (12,9% em média)","bars":[[5.70,"s1","5,7"]]}]}'></div>
+      </div>
+      <p class="takeaway">Se os votos sem digital fossem o caminho de uma fraude a favor de Lula, ele cresceria mais onde
+        eles são mais comuns. Aconteceu o contrário, e o volume foi o mesmo do 1º turno.</p>
+    </article>
+
+    <article class="card" id="outros-argumentos">
+      <header><h3 data-toc="Outros argumentos">Outros argumentos que circularam</h3><span class="verdict v-ok">Não conferem</span></header>
+      <p><span class="label">"Benford prova a fraude"</span><br>O "relatório pericial" usa a Lei de Benford. Uma eleição
+        simulada, sem fraude nenhuma, "reprova" no mesmo teste (ficha <a href="#a-lei-de-benford-acusa-fraude">A Lei de
+        Benford acusa fraude?</a>). O próprio relatório admite que precisaria de investigação para afirmar algo.</p>
+      <p><span class="label">"Mesários votaram por quem faltou, no horário extra"</span><br>Se isso tivesse acontecido em
+        escala, o comparecimento das seções que ficaram abertas subiria mais que o das vizinhas. Subiu 0,2 ponto a mais,
+        e o TSE registrou 34 mil votos depois das 17h no país inteiro.</p>
+      <p><span class="label">"Há mais eleitores que habitantes em 23 cidades da Bahia"</span><br>A comparação usa estimativas
+        de população do IBGE, e a diferença vem de quem se mudou sem transferir o título. Não dá para testar com os
+        boletins; a <a href="https://www.agencialupa.org/jornalismo/2026/10/30/numero-de-eleitores-maior-que-o-de-habitantes-em-cidades-da-bahia-nao-indica-fraude/">Lupa explica</a>.</p>
+      <p><span class="label">"Vídeo mostra urna votando sozinha na prorrogação"</span><br>O vídeo é de 2014, segundo a
+        <a href="https://www.aosfatos.org/noticias/video-nao-mostra-urna-registrando-votos-sozinha/">Aos Fatos</a>.</p>
+    </article>
+
+    <article class="card" id="limites">
+      <header><h3 data-toc="O que esta análise não vê">O que esta análise não consegue ver</h3><span class="verdict v-warn">Limite</span></header>
+      <p>Os testes deste relatório procuram as marcas que uma fraude deixaria nos boletins: contas que não fecham, seções
+        que destoam das vizinhas, padrões que só aparecem a favor de um lado. Uma alteração que mudasse todas as urnas do
+        mesmo jeito, na mesma proporção, não deixaria essas marcas.</p>
+      <p>Esse tipo de fraude é o que outras verificações procuram, e elas não dependem desta análise: o boletim é impresso
+        e afixado na seção antes de ser transmitido, e fiscais de partido podem conferi-lo com o publicado; urnas sorteadas
+        passam pelo teste de integridade, votando em paralelo à eleição, com filmagem; e o registro digital de cada voto
+        permite recontar. Há também um indício nos próprios dados: nas mesmas urnas, três semanas antes, o 1º turno deu a
+        Flávio 2,2 milhões de votos a mais que a Lula.</p>
+      <p class="takeaway">A estatística mostra que os padrões apontados não indicam fraude. Ela não substitui as auditorias,
+        e nem pretende.</p>
+    </article>
+
     <div class="card">
       <span class="label">Conclusão da parte 1</span>
       <p>Em nenhum dos dois turnos um teste encontrou algo capaz de mudar o resultado. Os padrões que chamam atenção,
-        como seções que destoam das vizinhas e comparecimento alto, aparecem igualmente em 2022 e têm explicação no perfil
-        do eleitorado. O que sobra é pequeno demais para pesar no resultado e merece apenas conferência manual.</p>
+        como seções que destoam das vizinhas e comparecimento alto, aparecem também no 1º turno, quando Flávio venceu, e
+        em 2022, e têm explicação no perfil e na geografia do eleitorado. Os argumentos mais compartilhados partem de
+        números certos, mas tiram deles conclusões que os boletins não sustentam. O que sobra é pequeno demais para pesar
+        no resultado e merece apenas conferência manual.</p>
     </div>
   </section>
 
@@ -636,7 +758,7 @@ h2:hover .anchor, h3:hover .anchor, .anchor:focus-visible { opacity: 1; }
   </section>
 
   <footer class="small">
-    <span>Atualizado em 28 de outubro de 2026. <a href="#topo">Voltar ao topo</a></span>
+    <span>Atualizado em 30 de outubro de 2026. <a href="#topo">Voltar ao topo</a></span>
     Fontes: boletins de urna e candidaturas do TSE (2022 e 2026), Portal da Transparência (emendas, 2023 a out/2026),
     dados abertos da Câmara dos Deputados. Código e notebooks: <a href="https://github.com/marcospflbarreto/eleicoes-2026">github.com/marcospflbarreto/eleicoes-2026</a>.
   </footer>
